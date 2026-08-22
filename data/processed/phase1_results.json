@@ -1,0 +1,70 @@
+{
+  "dataset": {
+    "path": "D:\\datasets\\creditcard.csv",
+    "total_transactions": 284807,
+    "legitimate_transactions": 284315,
+    "fraud_transactions": 492,
+    "fraud_percentage": 0.001727485630620034
+  },
+  "split": {
+    "train_samples": 227845,
+    "test_samples": 56962,
+    "train_fraud_percentage": 0.001729245759178389,
+    "test_fraud_percentage": 0.0017204452090867595
+  },
+  "preprocessing": {
+    "scaling": "StandardScaler (fit on train only)",
+    "smote_applied": false,
+    "smote_sampling_strategy": null,
+    "train_resampled_size": 227845,
+    "train_resampled_fraud_count": 394
+  },
+  "model": {
+    "algorithm": "XGBoost",
+    "best_max_depth": 7,
+    "best_learning_rate": 0.15,
+    "n_estimators": 100,
+    "scale_pos_weight": 577.2868020304569
+  },
+  "threshold": {
+    "optimal_threshold": 0.7000000000000002
+  },
+  "metrics": {
+    "accuracy": 0.9995786664794073,
+    "precision": 0.9111111111111111,
+    "recall": 0.8367346938775511,
+    "f1_score": 0.8723404255319149,
+    "auc_roc": 0.9692409673492357,
+    "pr_auc": 0.8716329310770835
+  },
+  "confusion_matrix": {
+    "true_positives": 82,
+    "true_negatives": 56856,
+    "false_positives": 8,
+    "false_negatives": 16,
+    "false_positive_rate": 0.00014068655036578504,
+    "false_negative_rate": 0.16326530612244897
+  },
+  "top_features": {
+    "V14": 0.6001319289207458,
+    "V4": 0.05402316898107529,
+    "V12": 0.04107122868299484,
+    "V8": 0.02722693793475628,
+    "V13": 0.01988174393773079,
+    "V20": 0.018308602273464203,
+    "V27": 0.018137387931346893,
+    "V18": 0.0173382256180048,
+    "Amount": 0.015906058251857758,
+    "V26": 0.015343190170824528
+  },
+  "quantum_features": [
+    "V14",
+    "V4",
+    "V12",
+    "V8",
+    "V13",
+    "V20",
+    "V27",
+    "V18"
+  ]
+}

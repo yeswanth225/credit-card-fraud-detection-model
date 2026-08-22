@@ -1,0 +1,63 @@
+{
+  "dataset": {
+    "total_transactions": 284807,
+    "fraud_transactions": 492,
+    "fraud_percentage": 0.001727485630620034
+  },
+  "split": {
+    "training_samples": 170883,
+    "validation_samples": 56962,
+    "test_samples": 56962,
+    "train_fraud_pct": 0.0017263273701889597,
+    "val_fraud_pct": 0.0017380007724447878,
+    "test_fraud_pct": 0.0017204452090867595
+  },
+  "model": {
+    "algorithm": "XGBoost",
+    "best_max_depth": 7,
+    "best_learning_rate": 0.1,
+    "scale_pos_weight": 578.264406779661
+  },
+  "threshold": {
+    "optimal_value": 0.8500000000000002,
+    "optimization_set": "validation"
+  },
+  "metrics": {
+    "accuracy": 0.9995259997893332,
+    "precision": 0.9080459770114943,
+    "recall": 0.8061224489795918,
+    "f1_score": 0.8540540540540541,
+    "auc_roc": 0.9695296080587552,
+    "pr_auc": 0.855704171687446
+  },
+  "confusion_matrix": {
+    "true_positives": 79,
+    "true_negatives": 56856,
+    "false_positives": 8,
+    "false_negatives": 19,
+    "false_positive_rate": 0.00014068655036578504,
+    "false_negative_rate": 0.19387755102040816
+  },
+  "top_features": {
+    "V14": 0.6292915344238281,
+    "V12": 0.05247090011835098,
+    "V4": 0.04400782659649849,
+    "Amount": 0.030410535633563995,
+    "V13": 0.023727042600512505,
+    "V27": 0.022146496921777725,
+    "V21": 0.015471169725060463,
+    "V18": 0.014026807621121407,
+    "V20": 0.01395414862781763,
+    "V10": 0.013314660638570786
+  },
+  "quantum_features": [
+    "V14",
+    "V12",
+    "V4",
+    "Amount",
+    "V13",
+    "V27",
+    "V21",
+    "V18"
+  ]
+}

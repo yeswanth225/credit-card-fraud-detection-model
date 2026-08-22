@@ -1,0 +1,79 @@
+================================================================================
+PHASE 1 FINAL RESULTS - CREDIT CARD FRAUD DETECTION
+================================================================================
+
+DATASET:
+  Total transactions: 284,807
+  Fraud transactions: 492
+  Legitimate transactions: 284,315
+  Fraud percentage: 0.1727%
+
+TRAIN/TEST SPLIT:
+  Train samples: 227,845
+  Test samples: 56,962
+  Train fraud ratio: 0.1729%
+  Test fraud ratio: 0.1720%
+
+PREPROCESSING STRATEGY:
+  Scaling: StandardScaler (fit on training only)
+  SMOTE: Not available
+  SMOTE sampling strategy: 0.5
+  Train size after SMOTE: 227,845
+
+BEST HYPERPARAMETERS:
+  max_depth: 7
+  learning_rate: 0.15
+  n_estimators: 100
+  scale_pos_weight: 577.29
+
+OPTIMAL CLASSIFICATION THRESHOLD:
+  Threshold: 0.70
+
+EVALUATION METRICS (on TEST set with optimal threshold):
+  Accuracy:  0.9996
+  Precision: 0.9111
+  Recall:    0.8367
+  F1 Score:  0.8723
+  AUC-ROC:   0.9692
+  PR-AUC:    0.8716 (PRIMARY METRIC)
+
+CONFUSION MATRIX:
+  True Positives:  82
+  True Negatives:  56856
+  False Positives: 8
+  False Negatives: 16
+  False Positive Rate: 0.0001
+  False Negative Rate: 0.1633
+
+TOP 10 FEATURES (XGBoost Importance):
+   1. V14        0.600132
+   2. V4         0.054023
+   3. V12        0.041071
+   4. V8         0.027227
+   5. V13        0.019882
+   6. V20        0.018309
+   7. V27        0.018137
+   8. V18        0.017338
+   9. Amount     0.015906
+  10. V26        0.015343
+
+QUANTUM-READY FEATURES (Top 8):
+  1. V14
+  2. V4
+  3. V12
+  4. V8
+  5. V13
+  6. V20
+  7. V27
+  8. V18
+
+SAVED ARTIFACTS:
+  Model: data\processed\xgboost_model.joblib
+  Scaler: data\processed\scaler.joblib
+  Quantum train: data\processed\X_train_quantum.npy
+  Quantum test: data\processed\X_test_quantum.npy
+  Results JSON: data\processed\phase1_results.json
+
+================================================================================
+OK: PHASE 1 COMPLETE - READY FOR PHASE 2 QUANTUM COMPARISON
+================================================================================

@@ -1,0 +1,3 @@
+@echo off
+echo Starting Quantum Fraud Detection Backend API on port 8000...
+.\venv\Scripts\python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
