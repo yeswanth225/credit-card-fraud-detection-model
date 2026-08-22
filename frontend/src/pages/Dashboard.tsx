@@ -5,10 +5,16 @@
  * Mobile: card-row layout
  */
 
+/**
+ * Dashboard Page (Transaction List)
+ * Main view with minimal aesthetic transaction table
+ * Desktop: horizontal card layout with details dialog
+ * Mobile: card stack layout
+ */
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SortableTable, type SortState, type TableColumn } from '../components/SortableTable';
-import { StatusBadge } from '../components/StatusBadge';
+import { TransactionTable } from '../components/TransactionTable';
 import { TYPOGRAPHY, API } from '../constants/design';
 
 interface Transaction {
@@ -25,10 +31,6 @@ export function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<SortState | null>({
-    columnId: 'fraud_score',
-    direction: 'desc',
-  });
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -58,51 +60,6 @@ export function Dashboard() {
     fetchTransactions();
   }, []);
 
-  const columns: TableColumn<Transaction>[] = [
-    {
-      id: 'merchant',
-      header: 'Merchant',
-      value: (t) => t.merchant,
-    },
-    {
-      id: 'amount',
-      header: 'Amount',
-      width: '100px',
-      align: 'end',
-      numeric: true,
-      value: (t) => t.amount,
-      cell: (t) => `$${t.amount.toFixed(2)}`,
-    },
-    {
-      id: 'timestamp',
-      header: 'Time',
-      width: '140px',
-      value: (t) => t.timestamp,
-    },
-    {
-      id: 'fraud_score',
-      header: 'Fraud Score',
-      width: '120px',
-      align: 'end',
-      numeric: true,
-      value: (t) => t.fraud_score,
-      cell: (t) => (
-        <div className="font-mono text-sm">
-          {(t.fraud_score * 100).toFixed(1)}%
-        </div>
-      ),
-    },
-    {
-      id: 'status',
-      header: 'Status',
-      width: '120px',
-      sortable: false,
-      cell: (t) => (
-        <StatusBadge status={t.status} label={t.status} score={t.fraud_score} />
-      ),
-    },
-  ];
-
   const statsCount = transactions.length;
   const fraudCount = transactions.filter((t) => t.status === 'fraud').length;
   const avgFraudScore = statsCount > 0
@@ -119,60 +76,64 @@ export function Dashboard() {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats Cards - Premium Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Transactions', value: statsCount },
+          { label: 'Total Transactions', value: statsCount, accent: 'blue' },
           {
             label: 'Flagged as Fraud',
             value: fraudCount,
+            accent: 'red',
           },
           {
             label: 'Avg Fraud Score',
             value: avgFraudScore.toFixed(3),
+            accent: 'amber',
           },
           {
             label: 'Model: Classical XGBoost',
             value: 'v1.0',
+            accent: 'emerald',
           },
-        ].map((stat, i) => (
-          <div
-            key={i}
-            className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4"
-          >
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-              {stat.label}
+        ].map((stat, i) => {
+          const accentMap: Record<string, string> = {
+            blue: 'from-blue-50 dark:from-blue-900/10 border-blue-200 dark:border-blue-800/50',
+            red: 'from-red-50 dark:from-red-900/10 border-red-200 dark:border-red-800/50',
+            amber: 'from-amber-50 dark:from-amber-900/10 border-amber-200 dark:border-amber-800/50',
+            emerald: 'from-emerald-50 dark:from-emerald-900/10 border-emerald-200 dark:border-emerald-800/50',
+          };
+          return (
+            <div
+              key={i}
+              className={`relative group rounded-xl border bg-gradient-to-br to-white dark:to-zinc-900 ${accentMap[stat.accent]} p-6 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}
+            >
+              {/* Subtle accent indicator */}
+              <div className={`absolute top-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-300 bg-gradient-to-r ${accentMap[stat.accent].split(' ')[0]}`} />
+
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
+                {stat.label}
+              </div>
+              <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+                {stat.value}
+              </div>
             </div>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mt-2">
-              {stat.value}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Transaction Table */}
+      {/* Transaction Table - Minimal Aesthetic */}
       <div>
         <h2 className={TYPOGRAPHY.sectionHeader}>Recent Transactions</h2>
         <div className="mt-4">
-          {loading ? (
-            <div className="p-8 text-center text-zinc-600 dark:text-zinc-400">
-              Loading transactions...
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="p-8 text-center text-red-600 dark:text-red-400">
               {error}
             </div>
           ) : (
-            <SortableTable<Transaction>
-              label="Recent transactions"
-              rows={transactions}
-              columns={columns}
-              getRowId={(t) => t.id}
-              sort={sort}
-              onSortChange={setSort}
-              onRowClick={(row) => {
-                navigate(`/transactions/${row.id}`);
-              }}
+            <TransactionTable
+              transactions={transactions}
+              loading={loading}
+              onRowClick={(tx) => navigate(`/transactions/${tx.id}`)}
             />
           )}
         </div>

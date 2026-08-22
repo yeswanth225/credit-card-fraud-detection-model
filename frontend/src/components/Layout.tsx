@@ -35,20 +35,20 @@ export function Layout({
 
       {/* Top Navigation (sticky) */}
       <nav
-        className="sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+        className="sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm"
         style={{ height: LAYOUT.navHeight }}
       >
         <div className="h-full max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo / Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <span className="text-white font-bold text-sm">FD</span>
             </div>
             <div>
-              <h1 className={`${TYPOGRAPHY.pageTitle} text-lg`}>
+              <h1 className={`${TYPOGRAPHY.pageTitle} text-lg font-bold`}>
                 Fraud Detection
               </h1>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                 Phase 1 Dashboard
               </p>
             </div>
@@ -58,36 +58,38 @@ export function Layout({
           <div className="flex items-center gap-8">
             <a
               href="/"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors relative group"
             >
               Transactions
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-200" />
             </a>
             <a
               href="/metrics"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors relative group"
             >
               Metrics
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-200" />
             </a>
             {/* Disabled placeholders for future phases */}
             <div className="relative group">
               <button
                 disabled
-                className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60"
+                className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60 transition-opacity"
               >
                 Quantum (Phase 2)
               </button>
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg font-medium">
                 Coming in Phase 2
               </div>
             </div>
             <div className="relative group">
               <button
                 disabled
-                className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60"
+                className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60 transition-opacity"
               >
                 Drift (Phase 3)
               </button>
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg font-medium">
                 Coming in Phase 3
               </div>
             </div>
@@ -98,19 +100,19 @@ export function Layout({
             {/* Theme Toggle */}
             <button
               onClick={onToggleTheme}
-              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDark ? (
-                <Sun size={18} className="text-zinc-400" />
+                <Sun size={18} className="text-zinc-400 transition-transform duration-200 hover:scale-110" />
               ) : (
-                <Moon size={18} className="text-zinc-600" />
+                <Moon size={18} className="text-zinc-600 transition-transform duration-200 hover:scale-110" />
               )}
             </button>
 
             {/* Role Badge */}
-            <div className="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">
+            <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800 shadow-sm">
+              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
                 {userRole}
               </span>
             </div>
@@ -118,10 +120,10 @@ export function Layout({
             {/* Logout */}
             <button
               onClick={onLogout}
-              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
               aria-label="Logout"
             >
-              <SignOut size={18} className="text-zinc-600 dark:text-zinc-400" />
+              <SignOut size={18} className="text-zinc-600 dark:text-zinc-400 transition-transform duration-200 hover:scale-110" />
             </button>
           </div>
         </div>

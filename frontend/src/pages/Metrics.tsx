@@ -114,35 +114,48 @@ export function Metrics() {
         </p>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Metrics Grid - Premium Card Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: 'Accuracy', value: (data.metrics.accuracy * 100).toFixed(2) + '%' },
-          { label: 'Precision', value: (data.metrics.precision * 100).toFixed(2) + '%' },
-          { label: 'Recall', value: (data.metrics.recall * 100).toFixed(2) + '%' },
-          { label: 'F1 Score', value: (data.metrics.f1_score * 100).toFixed(2) + '%' },
-          { label: 'AUC-ROC', value: (data.metrics.auc_roc * 100).toFixed(2) + '%' },
-          { label: 'PR-AUC', value: (data.metrics.pr_auc * 100).toFixed(2) + '%' },
-        ].map((metric) => (
-          <div
-            key={metric.label}
-            className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6"
-          >
-            <div className="text-sm font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-              {metric.label}
+          { label: 'Accuracy', value: (data.metrics.accuracy * 100).toFixed(2) + '%', accent: 'blue' },
+          { label: 'Precision', value: (data.metrics.precision * 100).toFixed(2) + '%', accent: 'emerald' },
+          { label: 'Recall', value: (data.metrics.recall * 100).toFixed(2) + '%', accent: 'violet' },
+          { label: 'F1 Score', value: (data.metrics.f1_score * 100).toFixed(2) + '%', accent: 'cyan' },
+          { label: 'AUC-ROC', value: (data.metrics.auc_roc * 100).toFixed(2) + '%', accent: 'orange' },
+          { label: 'PR-AUC', value: (data.metrics.pr_auc * 100).toFixed(2) + '%', accent: 'rose' },
+        ].map((metric) => {
+          const accentMap: Record<string, string> = {
+            blue: 'from-blue-50 dark:from-blue-900/10 border-blue-200 dark:border-blue-800/50',
+            emerald: 'from-emerald-50 dark:from-emerald-900/10 border-emerald-200 dark:border-emerald-800/50',
+            violet: 'from-violet-50 dark:from-violet-900/10 border-violet-200 dark:border-violet-800/50',
+            cyan: 'from-cyan-50 dark:from-cyan-900/10 border-cyan-200 dark:border-cyan-800/50',
+            orange: 'from-orange-50 dark:from-orange-900/10 border-orange-200 dark:border-orange-800/50',
+            rose: 'from-rose-50 dark:from-rose-900/10 border-rose-200 dark:border-rose-800/50',
+          };
+          return (
+            <div
+              key={metric.label}
+              className={`relative group rounded-xl border bg-gradient-to-br to-white dark:to-zinc-900 ${accentMap[metric.accent]} p-6 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}
+            >
+              {/* Subtle accent bar */}
+              <div className={`absolute top-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-300 bg-gradient-to-r ${accentMap[metric.accent].split(' ')[0]}`} />
+
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                {metric.label}
+              </div>
+              <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-50 font-mono">
+                {metric.value}
+              </div>
             </div>
-            <div className="text-3xl font-bold mt-3 text-zinc-900 dark:text-zinc-50">
-              {metric.value}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Charts Grid */}
+      {/* Charts Grid - Premium Card Design */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Confusion Matrix */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4`}>Confusion Matrix</h3>
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 backdrop-blur-sm p-6 shadow-sm hover:shadow-md transition-all duration-200">
+          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4 text-zinc-900 dark:text-zinc-50`}>Confusion Matrix</h3>
           <Plot
             data={[
               {
@@ -171,8 +184,8 @@ export function Metrics() {
         </div>
 
         {/* ROC Curve */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4`}>ROC Curve</h3>
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 backdrop-blur-sm p-6 shadow-sm hover:shadow-md transition-all duration-200">
+          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4 text-zinc-900 dark:text-zinc-50`}>ROC Curve</h3>
           <Plot
             data={[
               {
@@ -205,8 +218,8 @@ export function Metrics() {
         </div>
 
         {/* PR Curve */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4`}>Precision-Recall Curve</h3>
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 backdrop-blur-sm p-6 shadow-sm hover:shadow-md transition-all duration-200">
+          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4 text-zinc-900 dark:text-zinc-50`}>Precision-Recall Curve</h3>
           <Plot
             data={[
               {
@@ -232,8 +245,8 @@ export function Metrics() {
         </div>
 
         {/* Feature Importance */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4`}>Feature Importance (Top 10)</h3>
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 backdrop-blur-sm p-6 shadow-sm hover:shadow-md transition-all duration-200">
+          <h3 className={`${TYPOGRAPHY.cardTitle} mb-4 text-zinc-900 dark:text-zinc-50`}>Feature Importance (Top 10)</h3>
           <Plot
             data={[
               {

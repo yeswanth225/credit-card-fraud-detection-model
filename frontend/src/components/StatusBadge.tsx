@@ -1,9 +1,11 @@
 /**
  * Status Badge Component
- * Adapted from 21st.dev (serafimcloud/status-badge)
+ * Enhanced with smooth transitions and visual hierarchy
  * Customized for fraud detection: red (fraud), green (clear), amber (pending)
  * Uses our locked design tokens: zinc neutrals, risk colors
  */
+
+'use client';
 
 import { cn } from '../utils/cn';
 
@@ -19,19 +21,25 @@ const statusConfig = {
     bg: 'bg-red-50 dark:bg-red-900/20',
     border: 'border-red-200 dark:border-red-800',
     text: 'text-red-700 dark:text-red-400',
+    bgHover: 'hover:bg-red-100 dark:hover:bg-red-900/30',
     icon: '●',
+    dot: 'bg-red-500',
   },
   clear: {
     bg: 'bg-green-50 dark:bg-green-900/20',
     border: 'border-green-200 dark:border-green-800',
     text: 'text-green-700 dark:text-green-400',
+    bgHover: 'hover:bg-green-100 dark:hover:bg-green-900/30',
     icon: '✓',
+    dot: 'bg-green-500',
   },
   pending: {
     bg: 'bg-amber-50 dark:bg-amber-900/20',
     border: 'border-amber-200 dark:border-amber-800',
     text: 'text-amber-700 dark:text-amber-400',
+    bgHover: 'hover:bg-amber-100 dark:hover:bg-amber-900/30',
     icon: '○',
+    dot: 'bg-amber-500',
   },
 };
 
@@ -46,21 +54,20 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium border',
+        'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-150',
         config.bg,
         config.border,
         config.text,
+        config.bgHover,
         className
       )}
       role="status"
       aria-label={`${label}: ${score !== undefined ? score.toFixed(2) : 'unknown'}`}
     >
-      <span aria-hidden="true" className="text-sm">
-        {config.icon}
-      </span>
-      <span>{label}</span>
+      <span aria-hidden="true" className={`w-2 h-2 rounded-full ${config.dot} opacity-80`} />
+      <span className="font-semibold">{label}</span>
       {score !== undefined && (
-        <span className="font-mono text-xs opacity-75">
+        <span className="font-mono text-xs opacity-70 ml-0.5">
           {(score * 100).toFixed(0)}%
         </span>
       )}

@@ -177,7 +177,7 @@ export function SortableTable<T>({
 
   return (
     <div
-      className={`overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm ${className}`}
+      className={`overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}
       role="table"
       aria-label={label}
       aria-rowcount={rows.length + 1}
@@ -188,7 +188,7 @@ export function SortableTable<T>({
         <div
           role="row"
           aria-rowindex={1}
-          className="grid h-10 items-center gap-x-2 border-b border-zinc-200 dark:border-zinc-800 px-4 bg-zinc-50 dark:bg-zinc-800/50"
+          className="grid h-11 items-center gap-x-2 border-b border-zinc-200 dark:border-zinc-800 px-4 bg-gradient-to-r from-zinc-50 to-zinc-50/50 dark:from-zinc-800/30 dark:to-zinc-800/10"
           style={{ gridTemplateColumns: template }}
         >
           {columns.map((column) => {
@@ -215,7 +215,7 @@ export function SortableTable<T>({
                   <button
                     type="button"
                     onClick={() => toggle(column.id)}
-                    className={`group flex h-8 w-full items-center gap-2 rounded-md px-2 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ${
+                    className={`group flex h-8 w-full items-center gap-2 rounded-md px-2 outline-none transition-colors duration-150 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/30 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ${
                       end ? 'flex-row-reverse' : ''
                     }`}
                   >
@@ -299,9 +299,9 @@ export function SortableTable<T>({
                 : { ...CELL, delay: Math.min(index, STEP_CAP) * STEP }
             }
             onClick={() => onRowClick?.(row)}
-            className={`absolute inset-x-0 top-0 grid items-center gap-x-2 px-4 border-b border-zinc-100 dark:border-zinc-800 transition-colors duration-150 ${
+            className={`absolute inset-x-0 top-0 grid items-center gap-x-2 px-4 border-b border-zinc-100 dark:border-zinc-800/50 transition-all duration-150 ${
               onRowClick
-                ? 'cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                ? 'cursor-pointer hover:bg-zinc-50/80 dark:hover:bg-zinc-800/30 hover:shadow-sm'
                 : ''
             }`}
             style={{ height: rowHeight, gridTemplateColumns: template }}
