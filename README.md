@@ -1,324 +1,96 @@
-# 🛡️ Credit Card Fraud Detection — Classical + Quantum
+# Credit Card Fraud Detection — Classical + Quantum
 
-**A quantum-ready fraud detection system with a completed, rigorously-evaluated XGBoost baseline on real-world, highly imbalanced transaction data — plus a prepared 8-feature quantum dataset for the upcoming VQC / QSVM benchmarking phase.**
+A fraud detection system built in two stages: a completed classical ML baseline (XGBoost), and an upcoming quantum machine learning phase (VQC / QSVM) evaluated against it.
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![XGBoost](https://img.shields.io/badge/Model-XGBoost-red)](https://xgboost.readthedocs.io/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Status](https://img.shields.io/badge/Phase%201-Complete-brightgreen)]()
-[![Status](https://img.shields.io/badge/Phase%202%20(Quantum)-Not%20Started-lightgrey)]()
-[![License](https://img.shields.io/badge/License-MIT-blue)]()
+[![Phase 1](https://img.shields.io/badge/Phase%201-Complete-brightgreen)]()
+[![Phase 2 (Quantum)](https://img.shields.io/badge/Phase%202%20(Quantum)-Not%20Started-lightgrey)]()
 
-> ⚠️ **Honest status note:** Phase 1 (the classical XGBoost baseline) is **complete and fully evaluated** on real, untouched test data. The quantum layer (VQC / QSVM) has **not been implemented yet** — the 8-feature quantum-ready dataset is prepared, but there's no `phase2/` in the repo yet. The frontend and backend are scaffolded and under active development, not finished.
-
----
-
-## 📚 Table of Contents
-
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Project Status](#-project-status)
-- [Results](#-results-phase-1-classical-baseline-complete)
-- [Dataset](#-dataset)
-- [Repository Structure](#-repository-structure)
-- [Documentation](#-documentation)
-- [Getting Started](#-getting-started)
-- [Usage](#-usage)
-- [Roadmap](#-roadmap)
-- [Key Findings](#-key-findings)
-- [Contributing](#-contributing)
-- [License](#-license)
+> **Honest status:** Phase 1 (classical XGBoost baseline) is **complete and evaluated on real data**. The quantum implementation has **not started yet**. The frontend and backend are functional and under active development.
 
 ---
 
-## 🔍 Overview
+## What This Project Does
 
-Credit card fraud costs financial institutions billions annually, and the underlying data is brutally imbalanced — genuine transactions outnumber fraud roughly **578 to 1**. This project tackles that problem in two stages:
+Credit card fraud is rare — only about 0.17% of transactions are fraudulent — which makes it a hard detection problem. This project:
 
-1. **Phase 1 — Classical baseline (✅ complete):** A tuned XGBoost model trained on the real Kaggle Credit Card Fraud dataset, with leakage-safe splits, threshold optimization, and imbalance-aware evaluation (PR-AUC as the primary metric).
-2. **Phase 2 — Quantum benchmarking (⏳ not started):** The top 8 most informative features (accounting for ~83% of cumulative importance) have already been reduced into a quantum-ready dataset. The next step is implementing **VQC** and **QSVM** and benchmarking them against the Phase 1 baseline to answer: *can quantum computing meaningfully improve fraud detection today?*
-
-Beyond the model, this is being built as a full-stack application — a FastAPI backend and a React + Vite frontend for a live fraud-detection dashboard — both currently scaffolded and under active development.
-
----
-
-## 🏗️ Architecture
-
-**Current (Phase 1 — live):**
-
-```text
-Transaction Data (creditcard.csv)
-        │
-        ▼
- Preprocessing (StandardScaler, leakage-safe split)
-        │
-        ▼
-   XGBoost Classifier
-   (max_depth=7, lr=0.1, 3-fold CV, threshold=0.85)
-        │
-        ▼
-  Fraud / Legitimate
-```
-
-**Planned (full stack, once Phase 2 lands):**
-
-```text
-        React Frontend
-              │
-              ▼
-        FastAPI Backend
-              │
-              ▼
-   Fraud Detection Pipeline
-       ┌──────┴──────┐
-       ▼             ▼
-   XGBoost       Quantum Model
-  (baseline)      ┌────┴────┐
-                   ▼         ▼
-                  VQC      QSVM
-       │             │
-       └──────┬──────┘
-              ▼
-     Fraud / Legitimate
-     + Classical vs. Quantum Benchmark
-```
+1. **Trains a classical XGBoost model** on 284,807 real European credit card transactions (PR-AUC 0.8557, F1 0.8541).
+2. **Prepares a quantum-ready dataset** (8 most important features) for comparison with quantum classifiers.
+3. **Serves predictions via a FastAPI backend** connected to a React + Vite dashboard with live fraud scores and SHAP explanations.
+4. **Plans a quantum benchmarking phase** (VQC and QSVM) to honestly measure: can quantum computing improve fraud detection?
 
 ---
 
-## ✅ Project Status
+## Results (Phase 1 — Classical Baseline)
 
-| Component                        |       Status       |
-| --------------------------------- | :-----------------: |
-| Real credit-card dataset          |     ✅ Integrated    |
-| Data preprocessing                |      ✅ Complete     |
-| Classical ML pipeline             |      ✅ Complete     |
-| XGBoost model                     |      ✅ Complete     |
-| Hyperparameter tuning             |      ✅ Complete     |
-| Threshold optimization            |      ✅ Complete     |
-| Leakage prevention                |      ✅ Verified     |
-| Feature selection (8-feature set) |      ✅ Complete     |
-| Quantum-ready dataset             |      ✅ Prepared     |
-| Phase 1 evaluation                |      ✅ Complete     |
-| FastAPI backend                   |  🟡 In development   |
-| React + Vite frontend             |  🟡 In development   |
-| VQC (Variational Quantum Classifier) |    ⏳ Not started   |
-| QSVM (Quantum SVM)                |     ⏳ Not started   |
-| Quantum vs. classical benchmark   |     ⏳ Not started   |
-| Production deployment             |      ⏳ Future       |
+Evaluated on a held-out test set never seen during training or tuning.
+
+| Metric | Score |
+|--------|-------|
+| **PR-AUC** (primary) | **0.8557** |
+| ROC-AUC | 0.9695 |
+| F1 Score | 0.8541 |
+| Precision | 0.9080 |
+| Recall | 0.8061 |
+
+The model catches **~80.6% of fraud** with only **8 false alarms** across 56,864 legitimate transactions.
 
 ---
 
-## 📊 Results (Phase 1 — Classical Baseline, complete)
+## Project Status
 
-Evaluated on a held-out test set that was **never touched until final evaluation**; decision threshold was optimized on the validation split only.
-
-| Metric        | Score      |
-| ------------- | ---------- |
-| **PR-AUC** ⭐ (primary metric) | **0.8557** |
-| ROC-AUC       | 0.9695     |
-| F1 Score      | 0.8541     |
-| Precision     | 0.9080     |
-| Recall        | 0.8061     |
-
-> Why PR-AUC as the primary metric? With fraud at ~0.17% of transactions, ROC-AUC can look deceptively strong even for weak models — PR-AUC is far more honest about performance on the minority (fraud) class.
-
-**Confusion matrix (test set):**
-
-| | Predicted: Legit | Predicted: Fraud |
-|---|---:|---:|
-| **Actual: Legit** | 56,856 (TN) | 8 (FP) |
-| **Actual: Fraud**  | 19 (FN) | 79 (TP) |
-
-**In plain terms:** the model catches **~80.6% of fraud** while keeping precision at **~90.8%** — only 8 false alarms out of nearly 57,000 legitimate transactions. This is the baseline the upcoming quantum models (VQC/QSVM) will need to beat.
+| Component | Status |
+|-----------|--------|
+| Dataset (Kaggle, 284,807 transactions) | ✅ Complete |
+| Preprocessing pipeline | ✅ Complete |
+| XGBoost classical model | ✅ Complete |
+| 8-feature quantum-ready dataset | ✅ Prepared |
+| FastAPI backend | 🟡 In development |
+| React + Vite dashboard | 🟡 In development |
+| VQC / QSVM (Phase 2) | ⏳ Not started |
+| Classical vs quantum benchmark | ⏳ Not started |
 
 ---
 
-## 🗃️ Dataset
+## Quick Start
 
-- **Source:** [Kaggle — Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
-- **Size:** 284,807 real transactions, of which only **492 (0.1727%)** are fraudulent
-- **Features:** `V1`–`V28` (PCA-anonymized components), `Time`, `Amount`, `Class` (target)
-
-| Split      | Transactions | Fraud |
-| ---------- | -----------: | ----: |
-| Training   |      170,883 |   295 |
-| Validation |       56,962 |    99 |
-| Test       |       56,962 |    98 |
-
-Split ratio: **60 / 20 / 20**, stratified to preserve the fraud rate across splits.
-
-**Quantum-ready arrays** (prepared, awaiting Phase 2):
-
-```text
-X_train_quantum.npy  → 227,845 × 8
-X_test_quantum.npy   →  56,962 × 8
-y_train_quantum.npy
-y_test_quantum.npy
-quantum_features.npy
-```
-
----
-
-## 📂 Repository Structure
-
-```text
-credit-card-fraud-detection-model/
-├── .agents/skills/
-├── .claude/
-├── data/
-│   └── processed/              # Preprocessed + quantum-ready datasets
-├── frontend/                   # React + Vite dashboard (in development)
-│   ├── public/
-│   ├── src/
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.js
-├── notebooks/                  # EDA & experimentation notebooks
-├── phase1/                     # Trained artifacts & results
-│   ├── xgboost_model.joblib
-│   ├── scaler.joblib
-│   ├── phase1_results.json
-│   ├── X_train_quantum.npy / X_test_quantum.npy
-│   ├── y_train_quantum.npy / y_test_quantum.npy
-│   ├── quantum_features.npy
-│   └── *.png                   # Visualizations
-├── scripts/                    # Utility / pipeline scripts
-├── src/
-│   ├── api/                    # FastAPI backend (in development)
-│   ├── ml/
-│   │   ├── classical_model.py
-│   │   └── data_preprocessor.py
-│   ├── database/
-│   └── data_loader.py
-├── requirements.txt
-├── requirements-plus.txt
-├── pyproject.toml
-├── run_backend.bat
-└── (see Documentation below)
-```
-
-> Note: there is no `phase2/` directory yet — the quantum implementation (VQC/QSVM) hasn't been started in the public repo.
-
----
-
-## 📖 Documentation
-
-This repo has grown a full documentation layer beyond this README — useful entry points:
-
-| Doc | What it covers |
-| --- | --- |
-| [`START_HERE.md`](START_HERE.md) | Orientation for new readers/contributors |
-| [`QUICKSTART_NOTEBOOK.md`](QUICKSTART_NOTEBOOK.md) | Fastest path to running the notebook |
-| [`QUICK_REFERENCE.md`](QUICK_REFERENCE.md) | Cheat-sheet of commands & paths |
-| [`DATA_ACQUISITION.md`](DATA_ACQUISITION.md) | How to obtain and place the dataset |
-| [`PHASE1_REPORT.md`](PHASE1_REPORT.md) / [`PHASE1_FINAL_SUMMARY.txt`](PHASE1_FINAL_SUMMARY.txt) | Full write-up of the classical baseline |
-| [`NOTEBOOK_SUMMARY.md`](NOTEBOOK_SUMMARY.md) / [`NOTEBOOK_PREVIEW.md`](NOTEBOOK_PREVIEW.md) | Notebook contents at a glance |
-| [`REAL_DATA_MIGRATION_COMPLETE.md`](REAL_DATA_MIGRATION_COMPLETE.md) / [`MIGRATION_SUMMARY.md`](MIGRATION_SUMMARY.md) | Move from synthetic to real data |
-| [`DELIVERY_SUMMARY.md`](DELIVERY_SUMMARY.md) / [`FINAL_DELIVERY_REPORT.md`](FINAL_DELIVERY_REPORT.md) | Delivery-level summaries |
-| [`READY_TO_USE.md`](READY_TO_USE.md) | Checklist for using trained artifacts |
-| [`INDEX.md`](INDEX.md) / [`INDEX.txt`](INDEX.txt) | Full file index |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.10+
-- pip (or `uv` / `poetry`, per `pyproject.toml`)
-- The Kaggle `creditcard.csv` dataset — see [`DATA_ACQUISITION.md`](DATA_ACQUISITION.md)
-
-### Installation
+**Prerequisites:** Python 3.10+, Node.js 18+, `data/raw/creditcard.csv` ([Kaggle download](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud))
 
 ```bash
-git clone https://github.com/yeswanth225/credit-card-fraud-detection-model.git
-cd credit-card-fraud-detection-model
-
+# Install Python dependencies
 pip install -r requirements.txt
-# Optional extras (quantum / dev tooling)
-pip install -r requirements-plus.txt
+
+# Start the backend
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Start the frontend (separate terminal)
+cd frontend && npm install && npm run dev
 ```
 
-### Run the classical pipeline
-
-```bash
-python src/data_loader.py
-python src/ml/data_preprocessor.py
-python src/ml/classical_model.py
-```
-
-### Run the backend (FastAPI — in development)
-
-```bash
-# Windows
-run_backend.bat
-
-# or directly
-uvicorn src.api.main:app --reload
-```
-
-### Run the frontend (React + Vite — in development)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- **Dashboard:** http://localhost:5173
+- **API:** http://localhost:8000
+- **API Docs:** http://localhost:8000/docs
 
 ---
 
-## 🧪 Usage
+## Documentation
 
-Load the trained Phase 1 model directly:
+All detailed documentation lives in [`docs/`](docs/):
 
-```python
-import joblib
-
-model = joblib.load("phase1/xgboost_model.joblib")
-scaler = joblib.load("phase1/scaler.joblib")
-
-# transaction_features: array of the model's input features
-scaled = scaler.transform(transaction_features)
-fraud_probability = model.predict_proba(scaled)[:, 1]
-
-# Optimal decision threshold from Phase 1 tuning
-is_fraud = fraud_probability >= 0.85
-```
+| File | What it covers |
+|------|---------------|
+| [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Architecture, components, what is built vs planned |
+| [`docs/DATASET.md`](docs/DATASET.md) | Dataset details, features, class imbalance, preprocessing |
+| [`docs/ML_MODEL.md`](docs/ML_MODEL.md) | Classical XGBoost model — architecture, training, evaluation |
+| [`docs/RESULTS.md`](docs/RESULTS.md) | Actual Phase 1 metrics and comparison table for Phase 2 |
+| [`docs/QUANTUM_PLAN.md`](docs/QUANTUM_PLAN.md) | Quantum roadmap, VQC/QSVM plan, comparison strategy |
+| [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md) | Folder structure, how to run, where to add quantum code |
 
 ---
 
-## 🗺️ Roadmap
+## License
 
-- [x] Acquire and validate real-world dataset
-- [x] Build leakage-safe preprocessing pipeline
-- [x] Train and tune XGBoost baseline
-- [x] Optimize decision threshold for PR-AUC
-- [x] Reduce features to a quantum-ready 8-feature set
-- [x] Full Phase 1 evaluation and reporting
-- [ ] Finish FastAPI backend endpoints
-- [ ] Finish React + Vite dashboard (live predictions, explainability view)
-- [ ] Implement Variational Quantum Classifier (VQC) — Phase 2
-- [ ] Implement Quantum SVM (QSVM) — Phase 2
-- [ ] Run classical vs. quantum benchmark study
-- [ ] Production deployment
-
----
-
-## 💡 Key Findings
-
-- **Feature `V14` alone accounts for ~62.93%** of model feature importance.
-- The **top 8 features capture ~83.16%** of cumulative importance — the basis for the quantum-ready feature set already prepared for Phase 2.
-- A tuned decision threshold of **0.85** (instead of the default 0.5) meaningfully improved the precision/recall trade-off for this highly imbalanced problem.
-- The Phase 1 baseline (**PR-AUC 0.8557, F1 0.8541**) is now the defensible number to beat with quantum models — no quantum results exist yet.
-
----
-
-## 🤝 Contributing
-
-Issues and PRs are welcome — especially around finishing the FastAPI backend, the React dashboard, and starting the Phase 2 quantum implementation. Please open an issue before submitting large changes.
-
----
-
-## 📄 License
-
-MIT — see [`LICENSE`](LICENSE) for details. *(Add a `LICENSE` file if one isn't present yet.)*
+MIT

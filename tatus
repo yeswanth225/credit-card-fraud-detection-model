@@ -1,0 +1,23 @@
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+ COMPLETION_SUMMARY.md            | 280 [31m----------------------[m
+ DATA_ACQUISITION.md              | 195 [31m---------------[m
+ DELIVERY_SUMMARY.md              | 356 [31m----------------------------[m
+ DESIGN_IMPROVEMENTS.md           | 199 [31m----------------[m
+ FINAL_DELIVERY_REPORT.md         | 415 [31m--------------------------------[m
+ FINAL_STATUS.txt                 | 228 [31m------------------[m
+ FRONTEND_INTEGRATION_COMPLETE.md | 179 [31m--------------[m
+ INDEX.md                         | 388 [31m------------------------------[m
+ INDEX.txt                        | 188 [31m---------------[m
+ MIGRATION_SUMMARY.md             | 262 [31m---------------------[m
+ NOTEBOOK_PREVIEW.md              | 436 [31m----------------------------------[m
+ NOTEBOOK_SUMMARY.md              | 313 [31m------------------------[m
+ PHASE1_FINAL_SUMMARY.txt         | 497 [31m---------------------------------------[m
+ PHASE1_REPORT.md                 | 247 [31m-------------------[m
+ PROJECT_ARCHITECTURE.md          | 440 [31m----------------------------------[m
+ QUICKSTART_NOTEBOOK.md           | 242 [31m-------------------[m
+ QUICK_REFERENCE.md               | 205 [31m----------------[m
+ README.md                        | 336 [32m+++++[m[31m---------------------[m
+ READY_TO_USE.md                  | 176 [31m--------------[m
+ REAL_DATA_MIGRATION_COMPLETE.md  | 278 [31m----------------------[m
+ START_HERE.md                    | 319 [31m-------------------------[m
+ 21 files changed, 54 insertions(+), 6125 deletions(-)
