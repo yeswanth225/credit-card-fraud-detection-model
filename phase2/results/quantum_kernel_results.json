@@ -1,0 +1,57 @@
+{
+  "experiment": "QSVC (Quantum Kernel SVM)",
+  "config": {
+    "n_qubits": 4,
+    "zz_reps": 2,
+    "train_subset_size": 800,
+    "test_subset_size": 200,
+    "balanced_train": true,
+    "random_seed": 42,
+    "shots": null,
+    "svm_C": 1.0
+  },
+  "circuit_resources": {
+    "name": "ZZFeatureMap",
+    "n_qubits": 4,
+    "depth": 1,
+    "n_gates": 1,
+    "gate_counts": {
+      "ZZFeatureMap": 1
+    },
+    "n_parameters": 4
+  },
+  "training_time_seconds": 5016.284,
+  "n_train": 800,
+  "n_train_fraud": 394,
+  "inference_time_seconds": 1260.691,
+  "n_test": 200,
+  "n_test_fraud": 1,
+  "metrics": {
+    "precision": 0.037037037037037035,
+    "recall": 1.0,
+    "f1": 0.07142857142857142,
+    "accuracy": 0.87,
+    "roc_auc": 0.9296482412060302,
+    "pr_auc": 0.06666666666666667,
+    "false_positive_rate": 0.1306532663316583,
+    "false_negative_rate": 0.0,
+    "true_positives": 1,
+    "true_negatives": 173,
+    "false_positives": 26,
+    "false_negatives": 0,
+    "confusion_matrix": [
+      [
+        173,
+        26
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "n_samples": 200,
+    "n_fraud": 1,
+    "n_legit": 199,
+    "threshold": 0.5
+  }
+}

@@ -70,7 +70,7 @@ uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
 cd frontend && npm install && npm run dev
 ```
 
-- **Dashboard:** http://localhost:5173
+- **Dashboard:** http://localhost:3000
 - **API:** http://localhost:8000
 - **API Docs:** http://localhost:8000/docs
 

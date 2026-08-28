@@ -1,0 +1,63 @@
+{
+  "experiment": "VQC (Variational Quantum Classifier)",
+  "config": {
+    "n_qubits": 4,
+    "zz_reps": 2,
+    "vqc_reps": 2,
+    "vqc_max_iter": 100,
+    "vqc_optimizer": "COBYLA",
+    "train_subset_size": 800,
+    "test_subset_size": 200,
+    "balanced_train": true,
+    "random_seed": 42,
+    "shots": null
+  },
+  "circuit_resources": {
+    "name": "ZZFeatureMap + RealAmplitudes",
+    "n_qubits": 4,
+    "depth": 2,
+    "n_gates": 2,
+    "gate_counts": {
+      "ZZFeatureMap": 1,
+      "RealAmplitudes": 1
+    },
+    "n_parameters": 16
+  },
+  "training_time_seconds": 645.026,
+  "n_train": 800,
+  "n_train_fraud": 394,
+  "n_optimizer_iterations": 0,
+  "final_loss": null,
+  "loss_history": [],
+  "inference_time_seconds": 2.17,
+  "n_test": 200,
+  "n_test_fraud": 1,
+  "metrics": {
+    "precision": 0.014925373134328358,
+    "recall": 1.0,
+    "f1": 0.029411764705882353,
+    "accuracy": 0.67,
+    "roc_auc": 0.949748743718593,
+    "pr_auc": 0.09090909090909091,
+    "false_positive_rate": 0.3316582914572864,
+    "false_negative_rate": 0.0,
+    "true_positives": 1,
+    "true_negatives": 133,
+    "false_positives": 66,
+    "false_negatives": 0,
+    "confusion_matrix": [
+      [
+        133,
+        66
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "n_samples": 200,
+    "n_fraud": 1,
+    "n_legit": 199,
+    "threshold": 0.5
+  }
+}

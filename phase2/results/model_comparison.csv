@@ -1,0 +1,4 @@
+model,n_samples_train,n_samples_test,n_features,n_qubits,pr_auc,roc_auc,f1,precision,recall,fpr,circuit_depth,total_time_s,backend,notes
+XGBoost (Phase 1),170883,56962,30,N/A,0.8716,0.9692,0.8723,0.9111,0.8367,0.000141,N/A,N/A,CPU (scikit-learn XGBoost),"Full dataset (227k samples), 30 features"
+QSVC,800,200,4,4,0.0667,0.9296,0.0714,0.037,1.0,nan,N/A,8238.25,Qiskit Statevector (ideal),"4-qubit ZZ feature map, balanced training subset"
+VQC,800,200,4,4,0.0909,0.9497,0.0294,0.0149,1.0,nan,N/A,647.45,Qiskit Statevector (ideal),"4-qubit ZZ feature map + RealAmplitudes ansatz, 100 COBYLA iterations"

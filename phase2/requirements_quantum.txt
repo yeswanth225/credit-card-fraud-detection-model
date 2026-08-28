@@ -1,0 +1,26 @@
+# Phase 2 — Quantum ML Dependencies
+# ===================================
+# Install BEFORE running any Phase 2 experiment:
+#
+#   pip install -r phase2/requirements_quantum.txt
+#
+# These are ADDITIVE to the existing requirements.txt.
+# They do NOT modify or replace any Phase 0/1 dependency.
+
+# Qiskit core (already installed as 2.5.2 — listed for reproducibility)
+qiskit>=2.5.0
+
+# Qiskit Aer — high-performance simulator for ideal + noisy simulation
+# Provides: AerSimulator, StatevectorSimulator, noise models
+qiskit-aer>=0.15.0
+
+# Qiskit Machine Learning — QSVC, VQC, FidelityQuantumKernel
+# v0.9.1+ is required for Qiskit 2.x / V2 primitives compatibility
+qiskit-machine-learning>=0.9.1
+
+# Qiskit Algorithms — COBYLA, SPSA, L-BFGS-B optimizers for VQC
+# Separated from qiskit-terra in Qiskit 1.x ecosystem
+qiskit-algorithms>=0.3.0
+
+# Visualization (likely already installed, listed for completeness)
+matplotlib>=3.7.0
