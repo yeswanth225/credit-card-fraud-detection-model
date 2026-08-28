@@ -1,156 +1,165 @@
-# Dataset
+# Dataset — Credit Card Fraud Detection
 
-## Source
-
-**Kaggle — Credit Card Fraud Detection (ULB)**
-https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
-
-Real European cardholder transactions from September 2013 (2 days).
+> Source: Kaggle / Machine Learning Group — Université Libre de Bruxelles (ULB)  
+> URL: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 
 ---
 
 ## Overview
 
 | Property | Value |
-|----------|-------|
-| Total transactions | 284,807 |
-| Fraudulent | 492 (0.1727%) |
-| Legitimate | 284,315 (99.83%) |
-| Features | 30 (V1–V28 + Time + Amount) |
-| Target column | `Class` (0 = legitimate, 1 = fraud) |
-| File format | CSV (~120 MB uncompressed) |
-| Missing values | None |
+|:---|:---|
+| Total Records | 284,807 transactions |
+| Fraudulent | 492 (0.172%) |
+| Legitimate | 284,315 (99.828%) |
+| Time Period | 2 days (September 2013) |
+| Cardholders | European cardholders |
+| Format | CSV, Parquet |
+| File Size | ~150 MB (CSV), ~30 MB (Parquet) |
 
 ---
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| `V1`–`V28` | PCA-transformed components. Original features are anonymized for privacy. Meaning of each component is unknown. |
-| `Time` | Seconds elapsed since the first transaction in the dataset |
-| `Amount` | Transaction amount in Euros |
-| `Class` | Target variable: 0 = legitimate, 1 = fraud |
+The dataset contains 31 columns:
 
-Because V1–V28 are already PCA-transformed, their raw values are not interpretable in the usual sense. The model learns patterns from their distributions.
+| Column | Type | Description |
+|:---|:---|:---|
+| `Time` | float | Seconds elapsed since first transaction |
+| `V1`–`V28` | float | PCA-anonymized features (confidential) |
+| `Amount` | float | Transaction amount (EUR) |
+| `Class` | int | Target: `1` = Fraud, `0` = Legitimate |
+
+> **Note**: V1–V28 are the result of a PCA transformation applied to the original features to protect cardholder privacy. The real features (merchant, location, card details) are not disclosed.
 
 ---
 
 ## Class Imbalance
 
-This is a severely imbalanced dataset:
-- **1 fraud per ~578 legitimate transactions**
-- Accuracy is a misleading metric here — a model that always predicts "not fraud" would achieve 99.83% accuracy
-- The correct primary metric is **PR-AUC** (Precision-Recall Area Under Curve), which measures performance specifically on the minority (fraud) class
+The dataset is highly imbalanced:
 
----
+```
+Class 0 (Legitimate): 284,315  (99.83%)
+Class 1 (Fraud):          492   (0.17%)
 
-## Train / Validation / Test Split
-
-| Split | Transactions | Fraud |
-|-------|-------------|-------|
-| Training (60%) | 170,883 | 295 |
-| Validation (20%) | 56,962 | 99 |
-| Test (20%) | 56,962 | 98 |
-
-Split is **stratified** — each split maintains the same ~0.17% fraud rate.
-
-**Important:** The test set was never touched until final evaluation. The decision threshold was tuned using only the validation set.
-
----
-
-## Preprocessing
-
-Applied in this exact order to prevent data leakage:
-
-1. **Train/test split first** (before any scaling) — stratified 60/20/20
-2. **StandardScaler** — fit on training data only, then applied to val and test
-3. **SMOTE oversampling** — applied to training data only (target ratio: 0.5), test set preserves real 0.17% fraud distribution
-
-```python
-# Correct order (no leakage)
-X_train, X_val, X_test, y_train, y_val, y_test = split(data, stratify=True)
-scaler.fit(X_train)           # fit only on training
-X_train = scaler.transform(X_train)
-X_val   = scaler.transform(X_val)    # transform, not fit
-X_test  = scaler.transform(X_test)
-X_train_smote, y_train_smote = SMOTE().fit_resample(X_train, y_train)
+Fraud-to-Legitimate ratio: 1 : 578
 ```
 
-Artifacts saved at `data/processed/scaler.joblib`.
+Handling strategies used in this project:
+- **SMOTE** (Synthetic Minority Oversampling) for training
+- **Class weights** in XGBoost (`scale_pos_weight = 578`)
+- **Stratified K-Fold** cross-validation
+- **Precision-Recall AUC** as primary metric (more informative than ROC-AUC for imbalanced data)
 
 ---
 
-## How to Obtain the Dataset
+## Feature Statistics
 
-1. Create a Kaggle account at https://www.kaggle.com
-2. Go to https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
-3. Download the dataset ZIP file
-4. Extract `creditcard.csv` and place it at `data/raw/creditcard.csv`
+| Feature | Min | Max | Mean | Std |
+|:---|:---|:---|:---|:---|
+| Time | 0 | 172,792 | 94,813 | 47,488 |
+| Amount | 0.00 | 25,691.16 | 88.35 | 250.12 |
+| V1–V28 | varies | varies | ~0 (PCA) | varies |
 
-**Or using the Kaggle API:**
+Notable fraud patterns:
+- **Amount**: Fraud transactions tend to cluster at smaller amounts (median ~9.25 EUR) or very large amounts
+- **Time**: Fraud is more frequent during late-night hours (0–6h)
+- **V14, V10, V12**: Most discriminative PCA features for fraud
+
+---
+
+## Data Files
+
+```
+data/
+├── raw/
+│   ├── creditcard.csv         ← Original Kaggle CSV (not committed, ~150 MB)
+│   ├── train.parquet          ← Training split (Parquet, compressed)
+│   └── test.parquet           ← Test split (Parquet, compressed)
+└── processed/
+    ├── train_scaled.parquet   ← Feature-scaled training data
+    ├── test_scaled.parquet    ← Feature-scaled test data
+    └── features.json          ← Selected feature names and metadata
+```
+
+> Raw data files are excluded from the repository (`.gitignore`) due to size. Download from Kaggle before running experiments.
+
+---
+
+## Downloading the Data
+
 ```bash
+# Using Kaggle CLI:
 pip install kaggle
-kaggle datasets download -d mlg-ulb/creditcardfraud -p data/raw
-cd data/raw && unzip creditcardfraud.zip
-```
+kaggle datasets download mlg-ulb/creditcardfraud
+unzip creditcardfraud.zip -d data/raw/
 
-**Or using the project download script:**
-```bash
-python scripts/download_data.py --output data/raw
-```
-
-**Verify the download:**
-```python
-import pandas as pd
-df = pd.read_csv('data/raw/creditcard.csv')
-print(df.shape)        # Expected: (284807, 31)
-print(df['Class'].sum())  # Expected: 492
+# Or run the helper script:
+python scripts/download_data.py
 ```
 
 ---
 
-## Quantum-Ready Dataset
+## Preprocessing Pipeline
 
-For Phase 2 (quantum), feature reduction has already been applied.
+```
+Raw CSV (284,807 rows)
+   │
+   ▼
+1. Load & validate schema
+   │
+   ▼
+2. Train/test split (80/20, stratified)
+   │
+   ▼
+3. StandardScaler on `Amount` and `Time`
+   (V1–V28 already PCA-normalized)
+   │
+   ▼
+4. SMOTE oversampling on training set only
+   (Fraud: 492 → ~5,000 synthetic samples)
+   │
+   ▼
+5. Save to data/processed/
+```
 
-The **top 8 features by XGBoost importance** account for ~83.16% of cumulative importance. These have been extracted and saved:
+---
 
-| File | Description |
-|------|-------------|
-| `data/processed/X_train_quantum.npy` | Training features (227,845 × 8) |
-| `data/processed/X_test_quantum.npy` | Test features (56,962 × 8) |
-| `data/processed/y_train_quantum.npy` | Training labels |
-| `data/processed/y_test_quantum.npy` | Test labels |
-| `data/processed/quantum_features.npy` | Names of the 8 selected features |
+## Engineered Features (Frontend Schema)
 
-**Why 8 features?**
-- Quantum circuits need each input feature to be encoded as a qubit rotation
-- More qubits = deeper circuits = more noise on real hardware
-- 8 features is a practical limit for near-term quantum devices
-- These 8 capture most of the discriminative signal
+For the frontend dashboard, the dataset is adapted to a realistic transaction schema:
 
-**Top feature:** `V14` alone accounts for ~60% of model importance. The exact 8 selected features are:
+| Original | Frontend Column | Mapping |
+|:---|:---|:---|
+| `Amount` | `amount` | Direct (EUR → INR conversion ×87) |
+| `Time` | `hour` | `(Time % 86400) / 3600` |
+| `V14` | Geo velocity proxy | Normalized to [0,1] |
+| `V12` | Distance from home proxy | Normalized to [0,1] |
+| `V10` | Merchant risk proxy | Normalized to [0,1] |
+| `Class` | `isKnownFraud` | 1 → true |
 
-| Rank | Feature | Importance |
-|------|---------|----------|
-| 1 | V14 | 60.01% |
-| 2 | V4 | 5.40% |
-| 3 | V12 | 4.11% |
-| 4 | V8 | 2.72% |
-| 5 | V13 | 1.99% |
-| 6 | V20 | 1.83% |
-| 7 | V27 | 1.81% |
-| 8 | V18 | 1.73% |
+---
 
-Cumulative importance of top 8: **76.6%** of the model's decisions.
+## Sample Distribution in Seed Data
 
-**Note:** The `quantum_features.npy` file stores these names: `['V14', 'V4', 'V12', 'V8', 'V13', 'V20', 'V27', 'V18']`
+The 55 seeded transactions in `frontend/js/seed-data.js` are sampled to preserve realistic class distribution:
 
-**Note:** The 8-feature dataset is awaiting the Phase 2 quantum implementation. No quantum model has been trained on it yet.
+| Batch | Total | Fraud | Legitimate | Fraud % |
+|:---|:---|:---|:---|:---|
+| Production Sample 01 | 35 | 7 | 28 | 20% |
+| Flagged Audit Ledger 02 | 20 | 5 | 15 | 25% |
+| **Total** | **55** | **12** | **43** | **21.8%** |
+
+> Note: Seed data uses a higher fraud rate than the original dataset (21.8% vs 0.17%) for educational demonstration purposes.
 
 ---
 
 ## Citation
 
-Dal Pozzolo, A., Caelen, O., Reid, M. D., & Bontempi, G. (2015). *Calibrating Probability with Undersampling for Unbalanced Classification*. IEEE ICDM.
+```
+Andrea Dal Pozzolo, Olivier Caelen, Reid A. Johnson and Gianluca Bontempi.
+Calibrating Probability with Undersampling for Unbalanced Classification.
+In Symposium on Computational Intelligence and Data Mining (CIDM), IEEE, 2015
+```
+
+*Part of the Credit Card Fraud Detection System — see root [README.md](../README.md)*

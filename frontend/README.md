@@ -1,120 +1,260 @@
-# [cred] — Smart Fraud Detection System
+# [cred] — Fraud Detection Dashboard
 
-**[cred]** is an explainable credit-card fraud detection web application built with a high-contrast, clean financial aesthetic. It enables financial analysts and account holders to upload or enter credit card transaction data and receive instant fraud probability predictions from a hybrid detection engine — comparing classical machine learning (XGBoost simulation) with quantum machine learning (VQC / QSVM simulation).
+> A premium, production-grade browser SPA for credit card fraud detection. Built with Vanilla HTML, CSS, and JavaScript. No framework dependencies. Powered by a classical XGBoost proxy scorer with a Quantum VQC toggle.
 
 ---
 
-## Key Features
+## Overview
 
-- **Hybrid Fraud Engine (Classical vs. Quantum)**: Compare risk scores between traditional decision trees and high-dimensional Hilbert quantum kernel classifications.
-- **Explainable Fraud Triage**: Every flagged score includes a plain-language explanation and a directional feature attribution breakdown ($\uparrow$ risk driver, $\downarrow$ security mitigator).
-- **Expanded Quick Single Check**: Inspect individual payments instantly across a 13-point risk vector including merchant category (mapped to MCCs), location, 2FA/chip status, payment instrument (Visa, Mastercard, RuPay/UPI, Amex, Discover), time of day, day of week, distance from home, distance from last transaction, ratio to median amount, and authentication retries.
-- **Batch CSV Ledger Ingestion**: Drag-and-drop CSV parser with schema validation, format error handling, and step-by-step progress tracking.
-- **Indian Rupee (`₹`) Localization**: Native INR currency formatting, Indian merchant categories (RuPay/UPI support), and kilometer-based distance metrics.
-- **PDF & CSV Exporting**: Generate multi-page PDF audit reports and raw CSV exports powered by `jsPDF`.
-- **Minimal SVG Line Icon System**: Lightweight, single-color line-art SVG icons inheriting `currentColor`.
-- **Notifications & Alert Engine**: In-app security alerts triggered automatically for high-risk ($\ge 70\%$) and medium-risk ($40\text{--}69\%$) transactions.
-- **Authentication & Privacy**: Local authentication (Sign up, Sign in, Password reset) enforcing strict user-level data isolation.
+`[cred]` is a fully client-side fraud detection dashboard that:
+
+- Analyzes batch CSV transaction files and flags high-risk payments
+- Provides real-time individual transaction risk scoring (Single Check)
+- Maintains an audit history of all past analysis runs
+- Sends in-app notifications for high-risk (≥70% fraud probability) transactions
+- Displays 55 seeded real-dataset transactions across 2 authentic batches for demonstration
+
+All state is stored in the browser's **localStorage** — no backend is required for demo mode.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|:---|:---|
+| Structure | HTML5, Semantic markup |
+| Styling | Vanilla CSS (design tokens, component classes) |
+| Logic | Vanilla ES Modules (no React, no Vue) |
+| Bundler | Vite 8 |
+| State | Browser localStorage |
+| Export | Client-side CSV + PDF generation |
 
 ---
 
 ## Getting Started
 
-### Prerequisites
+```bash
+# From the repo root:
+cd frontend
+npm install
+npm run dev
+# Runs at http://localhost:3000
+```
 
-No build tools or heavy Node.js toolchains are required. The project is built using native ES Modules, HTML5, and vanilla CSS3.
-
-### Running Locally
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Start the dev server (Vite or static server):
-   ```bash
-   npm run dev
-   # or
-   python -m http.server 3000
-   ```
-
-3. Open your browser and navigate to:
-   ```
-   http://localhost:3000/
-   ```
-
-4. **Demo Sign-In**: Enter any valid email address and a password ($\ge 8$ characters) to automatically register and log in.
+### Build for production
+```bash
+npm run build
+# Output in frontend/dist/
+```
 
 ---
 
-## Directory Structure
+## Folder Structure
 
 ```
 frontend/
-├── index.html                   # Single-Page Application entry shell
-├── package.json                 # Dev scripts & Vite configuration
-├── vite.config.js               # Vite local dev server configuration
+├── index.html                    ← Entry point, loads Vite bundle
+├── package.json
+├── vite.config.js
+├── sample_dataset_transactions.csv  ← Downloadable sample CSV
+│
 ├── css/
-│   ├── reset.css                # CSS Reset & base body font configuration
-│   ├── tokens.css               # Design tokens (colors, fonts, spacing, shadows)
-│   ├── components.css           # UI components (buttons, badges, gauges, tables, cards)
-│   ├── layout.css               # Shell layout, sidebar, header, stat grid
-│   └── screens.css              # Screen-specific styles (Auth, Dashboard, Single Check, etc.)
-├── js/
-│   ├── app.js                   # Client-side hash router, layout generators, toasts, modals
-│   ├── icons.js                 # Centralized minimal SVG line-icon generator
-│   ├── store.js                 # LocalStorage persistence & user authentication store
-│   ├── ml.js                    # Deterministic ML scoring engine & feature attributions
-│   ├── csv.js                   # CSV file parser & schema validator
-│   ├── export.js                # CSV & jsPDF report export engine
-│   ├── notifications.js         # Security alert notification generator & badge updater
-│   └── screens\
-│       ├── auth.js              # Login, Signup, Forgot/Reset password screens
-│       ├── dashboard.js         # Dashboard view (balanced upload, quick check, stats, trend)
-│       ├── single-check.js      # Expanded 13-attribute manual single-transaction check
-│       ├── transaction.js       # Transaction detail & Classical vs Quantum comparison
-│       ├── history.js           # Audit history list & batch detail views
-│       ├── settings.js          # Account settings (Profile, Security, Alerts)
-│       ├── notifications-screen.js # Security alerts panel
-│       └── about.js             # Platform overview & hybrid engine explanation
-└── project_bundle.txt           # Single text bundle containing full frontend codebase
+│   ├── tokens.css                ← Design tokens: colors, spacing, typography, radii
+│   ├── reset.css                 ← Normalize + box-sizing
+│   ├── components.css            ← Buttons, badges, cards, tables, modals, forms
+│   ├── layout.css                ← App shell, sidebar, header, content area
+│   └── screens.css               ← Page-specific styles (auth, dashboard, etc.)
+│
+└── js/
+    ├── app.js                    ← SPA router, sidebar HTML, header HTML, navigation
+    ├── store.js                  ← localStorage CRUD: Users, Sessions, Batches, Notifications
+    ├── ml.js                     ← Fraud scoring engine (classical proxy + quantum toggle)
+    ├── notifications.js          ← generateForBatch(), updateBell()
+    ├── csv.js                    ← CSV parser, validator, schema transformer
+    ├── export.js                 ← exportToCSV(), exportToPDF()
+    ├── icons.js                  ← SVG icon system (35+ icons)
+    ├── seed-data.js              ← 55 real-dataset transactions (DATASET_BATCH_1_RAW, DATASET_BATCH_2_RAW)
+    └── screens/
+        ├── auth.js               ← Login, Signup, Forgot Password, Reset Password
+        ├── dashboard.js          ← Main dashboard: stats, upload zone, batch selector, transaction table
+        ├── history.js            ← Audit history list + batch detail drill-down
+        ├── single-check.js       ← Single transaction form + real-time risk result
+        ├── transaction.js        ← Full transaction detail + factor breakdown
+        ├── notifications-screen.js  ← Notifications list with mark-read
+        ├── settings.js           ← Profile edit, notification preferences, account settings
+        └── about.js              ← About [cred] + Quantum Engine explainer
 ```
 
 ---
 
-## CSV Upload Schema
+## Design System
 
-When uploading batch statements via the Dashboard, the CSV file must contain the following required headers:
+### Color Tokens (CSS Variables)
 
-| Column | Type | Example | Description |
-| :--- | :--- | :--- | :--- |
-| `amount` | Numeric | `4500.00` | Transaction value in INR (`₹`) |
-| `merchant` | String | `Flipkart` | Merchant or beneficiary name |
-| `mcc` | Integer | `5311` | 4-digit Merchant Category Code |
-| `country` | String | `IN` | ISO 2-letter country code |
-| `card_type` | String | `RuPay` | Card brand or payment instrument |
-| `hour` | Integer | `14` | Hour of day (0–23) |
-| `distance_from_home` | Numeric | `8.5` | Physical distance from cardholder home (km) |
+| Token | Usage |
+|:---|:---|
+| `--c-high` | High-risk / Fraud (red) |
+| `--c-medium` | Medium-risk (amber) |
+| `--c-low` | Low-risk / Safe (green) |
+| `--c-bg` | Page background |
+| `--c-surface` | Card/panel surface |
+| `--c-surface-2` | Subtle surface |
+| `--c-text-1/2/3` | Text hierarchy |
+| `--c-accent` | Primary accent (indigo) |
+| `--c-quantum` | Quantum mode accent (violet) |
 
-### Optional Schema Columns
+### Component Classes
 
-- `distance_from_last_tx` (Numeric, km)
-- `ratio_to_median` (Numeric, e.g. `1.5`)
-- `retry_attempts` (Integer, 0–10)
-- `is_international` (Boolean, `true`/`false`)
-- `chip_authenticated` (Boolean, `true`/`false`)
+| Class | Description |
+|:---|:---|
+| `.btn .btn-primary` | Primary action button |
+| `.btn .btn-secondary` | Secondary outline button |
+| `.btn .btn-danger` | Destructive action |
+| `.badge .badge-high/medium/low` | Risk level badge |
+| `.score-pill .high/medium/low` | Fraud score colored pill |
+| `.risk-indicator .high/medium/low` | Dot + label risk indicator |
+| `.data-table` | Transaction table with sortable headers |
+| `.card` | Content card |
+| `.form-input .form-select` | Form controls |
+| `.alert .alert-error` | Inline alert messages |
 
 ---
 
-## Design Tokens & Typography
+## Application Screens
 
-- **UI Text & Headings**: `Inter` (Regular, Medium, Semibold, Bold).
-- **Financial Numbers, Scores, & IDs**: `JetBrains Mono` (`--font-mono`).
-- **Color Palette**: High-contrast, minimal black-and-white theme (`#0A0A0A` text/accents, `#FFFFFF` / `#F8F8F8` surfaces, `#EBEBEB` subtle borders).
-- **Risk Indicators**: High Risk (`#B91C1C`), Medium Risk (`#B45309`), Low Risk (`#166534`).
+### Dashboard (`/dashboard`)
+
+The main screen. Features:
+- **Batch Ledger Ingestion** — drop zone for CSV upload
+- **Load Dataset Sample** button — loads 55 authentic transactions from the seeded dataset
+- **All Batches Combined** — default view showing aggregate stats across all uploaded batches
+- **Batch Selector** dropdown — switch between individual batches or "All Combined"
+- **Transaction Overview** stats — Total, Flagged, Fraud Rate, Avg Risk Score
+- **Fraud Trend** sparkline chart
+- **Transaction Table** — sortable, filterable, paginated (25/page)
+  - Columns: Date, Merchant, Amount, MCC, Country, **Fraud Score** (pill), **Risk Level** (dot+label), **Status**
+- **Model Toggle** — Classical XGBoost / Quantum VQC
+- **Recent Batches** strip
+
+### Single Check (`/single-check`)
+
+Individual transaction real-time scoring:
+- Manual form with 7 fields: Amount, Merchant, MCC, Country, Card Type, Hour, Distance from Home
+- 4 **Dataset Preset** buttons (real transactions #8041, #8245, #8001, #8004)
+- Instant risk score + factor breakdown (13 fraud indicators)
+
+### History (`/history`)
+
+Audit log of all analysis sessions:
+- Lists all batches with type, date, transaction count, flagged count
+- Open, Export (CSV/PDF), Delete per batch
+- Batch detail drill-down with full transaction table
+
+### Transaction Detail (`/transaction/:id`)
+
+Full breakdown for one transaction:
+- Risk gauge visualization
+- Classical vs. Quantum score comparison
+- 13-factor risk breakdown (amount anomaly, time, geo-velocity, etc.)
+- Merchant + card details
+
+### Notifications (`/notifications`)
+
+In-app alert center:
+- Shows all high-risk alerts (seeded: 12 alerts from dataset)
+- Mark individual or all as read
+- Bell badge in header + sidebar stays synchronized
 
 ---
 
-## License
+## State Management (`store.js`)
 
-Confidential & Proprietary — Built for Financial Triage & Audit Operations.
+All app state lives in **browser localStorage** under these keys:
+
+| Key | Contents |
+|:---|:---|
+| `cred_users` | User accounts array |
+| `cred_sessions` | Session tokens map |
+| `cred_batches` | All uploaded/seeded batches with embedded transactions |
+| `cred_notifications` | Fraud alert notifications |
+| `cred_reset_tokens` | Password reset tokens |
+| `cred_meta` | App metadata (model last updated, etc.) |
+
+### Deduplication Guarantees
+
+`Batches.list(userId)` and `Notifications.list(userId)` automatically deduplicate records on read and self-heal any contaminated localStorage state from earlier sessions.
+
+`Batches.seedDataset(userId, force)` always produces exactly **2 deterministic batches** (IDs `batch_ds_prod_*` and `batch_ds_audit_*`) and **exactly N unique alerts** matching high-risk transactions.
+
+---
+
+## Fraud Scoring (`ml.js`)
+
+The JS scoring engine (`scoreTransaction`) uses a calibrated heuristic model that proxies the trained XGBoost classifier:
+
+```
+score = weighted_sum(
+  amount_anomaly,
+  time_anomaly,
+  geo_velocity,
+  merchant_risk,
+  mcc_risk,
+  international_flag,
+  distance_from_home,
+  card_type_risk,
+  velocity_flag,
+  round_amount_flag,
+  odd_hour_flag,
+  high_value_flag,
+  baseline
+)
+```
+
+Risk thresholds:
+- `score >= 0.70` → **High Risk** (Flagged, alert generated)
+- `score >= 0.40` → **Medium Risk**
+- `score < 0.40` → **Low Risk**
+
+---
+
+## Seed Dataset
+
+`seed-data.js` contains 55 real transactions extracted from the Credit Card Fraud Detection dataset:
+
+| Batch | File | Transactions | Fraud |
+|:---|:---|:---|:---|
+| Batch 1 | `creditcard_production_sample_01.csv` | 35 | 7 |
+| Batch 2 | `flagged_audit_ledger_02.csv` | 20 | 5 |
+
+4 preset transactions are available in Single Check:
+- **#8041** — Legitimate transaction (₹1,247.50)
+- **#8245** — Fraudulent (₹15,480.00)
+- **#8001** — High-risk international (₹8,920.00)
+- **#8004** — Legitimate domestic (₹325.75)
+
+---
+
+## CSV Schema
+
+Upload CSVs must include these columns (case-insensitive, order-independent):
+
+| Column | Type | Description |
+|:---|:---|:---|
+| `amount` | number | Transaction amount (INR) |
+| `merchant` | string | Merchant name |
+| `mcc` | number | Merchant Category Code |
+| `country` | string | ISO 2-letter country code |
+| `card_type` | string | credit / debit / prepaid |
+| `hour` | number | Hour of day (0–23) |
+| `distance_from_home` | number | Distance in km |
+
+---
+
+## Browser Compatibility
+
+- Chrome 90+, Edge 90+, Firefox 88+, Safari 14+
+- Requires: ES Modules, CSS Custom Properties, localStorage
+
+---
+
+*Part of the Credit Card Fraud Detection System — see root [README.md](../README.md)*

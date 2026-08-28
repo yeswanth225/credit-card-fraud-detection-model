@@ -1,213 +1,337 @@
 # Development Guide
 
-## Folder Structure
-
-```
-quantum/                          ← project root
-│
-├── data/
-│   ├── raw/
-│   │   └── creditcard.csv        ← Kaggle dataset (download separately, not in git)
-│   └── processed/
-│       ├── xgboost_model.joblib  ← Trained model
-│       ├── scaler.joblib         ← Fitted StandardScaler
-│       ├── classical_model.joblib ← Alternative model save
-│       ├── phase1_results.json   ← Phase 1 metrics
-│       ├── X_train_quantum.npy   ← 8-feature quantum training set (227,845 × 8)
-│       ├── X_test_quantum.npy    ← 8-feature quantum test set (56,962 × 8)
-│       ├── y_train_quantum.npy   ← Training labels
-│       ├── y_test_quantum.npy    ← Test labels
-│       └── quantum_features.npy  ← Names of the 8 selected features
-│
-├── src/
-│   ├── api/
-│   │   ├── main.py               ← FastAPI app entry point
-│   │   ├── analyst.py            ← Transaction + metrics endpoints
-│   │   ├── verification.py       ← Prediction endpoints
-│   │   └── admin.py              ← Admin endpoints
-│   ├── ml/
-│   │   ├── classical_model.py    ← FraudClassifier class (XGBoost + SHAP)
-│   │   └── data_preprocessor.py  ← FraudDataPreprocessor class
-│   ├── database/
-│   │   ├── models.py             ← SQLAlchemy ORM models
-│   │   └── connection.py         ← Database initialization
-│   ├── quantum/                  ← EMPTY — reserved for Phase 2 code
-│   └── data_loader.py            ← Data loading utilities
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx               ← Root component + page routing
-│   │   ├── pages/                ← Dashboard, DetectFraud, History, Analytics, ModelPerformance
-│   │   ├── components/
-│   │   │   ├── layout/           ← Sidebar, TopBar
-│   │   │   ├── charts/           ← Chart components
-│   │   │   └── ui/               ← UI primitives
-│   │   └── lib/                  ← Utilities
-│   ├── .env                      ← VITE_API_URL=http://localhost:8000
-│   ├── vite.config.js
-│   └── package.json
-│
-├── notebooks/
-│   ├── Phase1_Model_Analysis.ipynb  ← Main analysis notebook (run this)
-│   └── Phase1_Output.ipynb          ← Pre-executed notebook with outputs
-│
-├── phase1/                       ← Phase 1 artifacts and scripts
-│   ├── data/                     ← Duplicate model artifacts (backup)
-│   └── PHASE1_FINAL_SUMMARY.txt  ← Text summary of Phase 1
-│
-├── phase2/                       ← Phase 2 (UPCOMING — currently placeholder)
-│   ├── notebooks/                ← Put quantum experiment notebooks here
-│   ├── results/                  ← Put quantum results here
-│   └── models/                   ← Put saved quantum models here
-│
-├── scripts/
-│   ├── download_data.py          ← Kaggle dataset downloader
-│   ├── generate_demo_data.py     ← Synthetic demo data generator
-│   ├── test_imports.py           ← Dependency checker
-│   ├── install_deps.bat          ← Windows dependency installer
-│   └── install_deps.sh           ← Linux/Mac dependency installer
-│
-├── tests/                        ← Test suite
-├── docs/                         ← All project documentation (you are here)
-├── .env                          ← Backend environment variables
-├── requirements.txt              ← Core Python dependencies
-├── requirements-plus.txt         ← Extended deps (quantum, dev tools)
-├── pyproject.toml                ← Python project configuration
-└── run_backend.bat               ← Windows batch file to start backend
-```
+> Complete setup, workflow, and contribution guide for the Credit Card Fraud Detection project.
 
 ---
 
-## Where the Classical ML Code Is
+## Prerequisites
 
-| What you want | Where to look |
-|--------------|--------------|
-| XGBoost classifier class | `src/ml/classical_model.py` → `FraudClassifier` |
-| Preprocessing (scaling, SMOTE, splits) | `src/ml/data_preprocessor.py` → `FraudDataPreprocessor` |
-| API endpoints | `src/api/analyst.py`, `src/api/verification.py` |
-| Trained model artifact | `data/processed/xgboost_model.joblib` |
-| Analysis notebook | `notebooks/Phase1_Model_Analysis.ipynb` |
+| Tool | Version | Purpose |
+|:---|:---|:---|
+| Python | 3.10+ | ML backend, QML experiments |
+| Node.js | 18+ | Frontend dev server and bundling |
+| Git | Any | Version control |
+| pip | Latest | Python packages |
+| npm | 9+ | JS packages |
 
 ---
 
-## Running the Existing Project
+## Initial Setup
 
-### 1. Get the dataset
-
-Download `creditcard.csv` from Kaggle and place it at `data/raw/creditcard.csv`.  
-See [DATASET.md](DATASET.md) for full instructions.
-
-### 2. Set up the Python environment
+### 1. Clone the repository
 
 ```bash
-# Windows
+git clone https://github.com/yeswanth225/credit-card-fraud-detection-model
+cd credit-card-fraud-detection-model
+```
+
+### 2. Python environment
+
+```bash
+# Create virtual environment
 python -m venv venv
+
+# Activate
+# Windows:
 venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# Install core dependencies
 pip install -r requirements.txt
 
-# Optional: quantum and dev extras
-pip install -r requirements-plus.txt
+# Install quantum dependencies (Phase 2 only)
+pip install -r phase2/requirements_quantum.txt
 ```
 
-### 3. Check dependencies
-
-```bash
-python scripts/test_imports.py
-```
-
-### 4. Run the classical ML pipeline
-
-This retrains the model and saves artifacts to `data/processed/`:
-
-```bash
-python src/data_loader.py
-python src/ml/data_preprocessor.py
-python src/ml/classical_model.py
-```
-
-Skip this if you want to use the pre-trained model that is already in `data/processed/`.
-
-### 5. Start the backend
-
-```bash
-# Windows (batch file)
-run_backend.bat
-
-# Or directly
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### 6. Start the frontend
+### 3. Frontend setup
 
 ```bash
 cd frontend
-npm install      # only needed first time
-npm run dev
+npm install
 ```
 
-### 7. Access
+### 4. Environment variables
 
-| URL | What |
-|-----|------|
-| http://localhost:5173 | React dashboard |
-| http://localhost:8000 | FastAPI backend |
-| http://localhost:8000/docs | Swagger UI (interactive API docs) |
-| http://localhost:8000/health | Backend health check |
+Copy and edit the `.env` file:
+```bash
+cp .env.example .env
+# Edit DATA_DIR, MODEL_DIR, API settings as needed
+```
+
+### 5. Download dataset
+
+```bash
+# Using Kaggle CLI (recommended):
+pip install kaggle
+# Set up kaggle.json API credentials first (see kaggle.com/docs/api)
+python scripts/download_data.py
+
+# Or manually: download from https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+# Place creditcard.csv in data/raw/
+```
 
 ---
 
-### Run the analysis notebook
+## Running the Project
+
+### Frontend Dashboard (No backend needed)
 
 ```bash
-pip install jupyter  # if not already installed
-jupyter notebook notebooks/Phase1_Model_Analysis.ipynb
-# Then: Cell → Run All
+cd frontend
+npm run dev
+# Opens at http://localhost:3000
+```
+
+The dashboard works fully in demo mode using seeded data from `js/seed-data.js`. No Python backend is required.
+
+### Backend API (Optional)
+
+```bash
+# From repo root (with venv active):
+uvicorn src.api.main:app --reload --port 8000
+# API docs at http://localhost:8000/docs
+
+# Windows shortcut:
+run_backend.bat
+```
+
+### Phase 1 — Classical ML Training
+
+```bash
+# Train XGBoost (requires creditcard.csv in data/raw/):
+python phase1/scripts/train_model.py
+
+# Evaluate models:
+python phase1/scripts/evaluate.py
+
+# Run Jupyter notebooks:
+jupyter lab phase1/notebooks/
+```
+
+### Phase 2 — Quantum ML
+
+```bash
+# Quick test (synthetic data, fast):
+python -m phase2.experiments.toy_qml_experiment
+
+# Real dataset quantum kernel:
+python -m phase2.experiments.quantum_kernel_experiment
+
+# VQC training:
+python -m phase2.experiments.vqc_experiment
+
+# Run all experiments sequentially:
+python -m phase2.experiments.run_all
+
+# Visualize results:
+python -m phase2.experiments.visualize
+```
+
+---
+
+## Project Structure Explained
+
+```
+credit-card-fraud-detection-model/
+│
+├── frontend/        ← Browser SPA — the user-facing dashboard
+├── src/             ← Python backend source (API, ML, data)
+├── phase1/          ← Classical ML work and results
+├── phase2/          ← Quantum ML work and experiments
+├── data/            ← Raw + processed dataset files (gitignored raw)
+├── docs/            ← Project documentation (this folder)
+├── notebooks/       ← Shared Jupyter notebooks
+├── scripts/         ← Utility scripts (download, install, test)
+└── tests/           ← Automated test suite
+```
+
+---
+
+## Key Files Reference
+
+| File | Purpose |
+|:---|:---|
+| `frontend/js/store.js` | All localStorage state (users, batches, alerts) |
+| `frontend/js/ml.js` | JS fraud scoring engine |
+| `frontend/js/seed-data.js` | 55 real dataset transaction samples |
+| `frontend/js/screens/dashboard.js` | Main dashboard logic |
+| `frontend/css/tokens.css` | All design tokens |
+| `src/data_loader.py` | Dataset loading utilities |
+| `phase2/quantum/config.py` | QML configuration (qubits, backend, shots) |
+| `phase2/quantum/quantum_kernel.py` | Kernel matrix computation |
+| `phase2/experiments/run_all.py` | Run all Phase 2 experiments |
+
+---
+
+## Development Workflow
+
+### Frontend Changes
+
+1. Edit files in `frontend/js/` or `frontend/css/`
+2. Vite hot-reloads automatically at `http://localhost:3000`
+3. Run syntax check: `node -c frontend/js/<file>.js`
+4. Build: `cd frontend && npm run build`
+
+### Python/ML Changes
+
+1. Edit files in `src/` or `phase2/`
+2. Run tests: `pytest tests/ -v`
+3. Lint: `flake8 src/ phase2/`
+4. Format: `black src/ phase2/`
+
+### Adding a New Experiment (Phase 2)
+
+1. Create `phase2/experiments/my_experiment.py`
+2. Implement the standard experiment interface:
+   ```python
+   def run_experiment():
+       """Returns dict with 'accuracy', 'auc_roc', 'results'"""
+       ...
+   
+   if __name__ == '__main__':
+       results = run_experiment()
+       print(results)
+   ```
+3. Add to `phase2/experiments/run_all.py`
+4. Document in `phase2/README.md`
+
+### Adding a New Frontend Screen
+
+1. Create `frontend/js/screens/my-screen.js`
+2. Export `renderMyScreen(ctx)` function
+3. Import and register route in `frontend/js/app.js`
+4. Add nav link in `sidebarHTML()` if needed
+5. Add screen-specific styles to `frontend/css/screens.css`
+
+---
+
+## Testing
+
+### Frontend (manual)
+
+```bash
+cd frontend && npm run dev
+# Open browser, test all screens
+```
+
+### Python tests
+
+```bash
+# All tests:
+pytest tests/ -v
+
+# Specific module:
+pytest tests/test_ml.py -v
+
+# With coverage:
+pytest tests/ --cov=src --cov-report=html
+```
+
+### Syntax checks
+
+```bash
+# JS:
+node -c frontend/js/store.js
+node -c frontend/js/screens/dashboard.js
+
+# Python:
+python -m py_compile phase2/experiments/quantum_kernel_experiment.py
+```
+
+---
+
+## Code Style
+
+### JavaScript
+- ES Modules (no CommonJS)
+- `const`/`let` only (no `var`)
+- Template literals for HTML strings
+- 2-space indent
+- Descriptive function names: `renderDashboard`, `mountShell`, `computeStats`
+
+### Python
+- PEP 8 compliant (use `black` formatter)
+- Type hints on all public functions
+- Docstrings on all modules and classes
+- 4-space indent
+
+### CSS
+- All colors via CSS custom properties (`var(--c-*)`)
+- All spacing via spacing tokens (`var(--sp-*)`)
+- BEM-like class naming for components
+- No inline styles in HTML (exceptions: dynamic JS-generated content)
+
+---
+
+## Git Workflow
+
+```bash
+# Feature branch
+git checkout -b feat/my-feature
+
+# Commit with conventional commit messages:
+git commit -m "feat: add quantum noise experiment"
+git commit -m "fix: deduplicate batch notifications in store.js"
+git commit -m "docs: update phase2 README with VQC results"
+git commit -m "style: separate score and risk columns in dashboard table"
+
+# Push and open PR:
+git push origin feat/my-feature
+```
+
+### Commit Message Format
+
+```
+<type>: <short description>
+
+Types:
+  feat     → New feature
+  fix      → Bug fix
+  docs     → Documentation only
+  style    → CSS/formatting (no logic change)
+  refactor → Code restructure (no feature/fix)
+  test     → Add/fix tests
+  chore    → Build, deps, config changes
 ```
 
 ---
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| `ModuleNotFoundError` | Run `python scripts/test_imports.py` to check which packages are missing |
-| Backend port 8000 in use | Change `API_PORT` in `.env` |
-| Frontend port 5173 in use | Change `server.port` in `frontend/vite.config.js` |
-| `Model not found` error | Check `CLASSICAL_MODEL_PATH` in `.env`, or run the ML pipeline to regenerate |
-| CORS error in browser | Verify `VITE_API_URL` in `frontend/.env` matches the backend port |
-| `data/raw/creditcard.csv not found` | Download the dataset (see [DATASET.md](DATASET.md)) |
+### Frontend: "Cannot find module" error
+```bash
+cd frontend && npm install
+```
+
+### Frontend: Vite build fails
+```bash
+# Check vite.config.js is plain JS (not TypeScript):
+cat frontend/vite.config.js
+# Should start with: export default { ... }
+```
+
+### Frontend: Data shows duplicated batches
+- Open browser DevTools → Application → localStorage
+- Delete `cred_batches` and `cred_notifications` keys
+- Refresh the page — seed data will auto-reload clean
+
+### Python: "pennylane not found"
+```bash
+pip install -r phase2/requirements_quantum.txt
+```
+
+### Python: Quantum experiment hangs
+- Reduce `N_TRAIN_SAMPLES` in `phase2/quantum/config.py` to `20` for faster local runs
+- The kernel matrix computation is O(n²) — 50 samples = 2500 kernel evaluations
+
+### Dataset not found
+```bash
+# Download the dataset:
+python scripts/download_data.py
+# Or place creditcard.csv manually in data/raw/
+```
 
 ---
 
-## Where to Add Quantum Code (Phase 2)
-
-| New code | Where to put it |
-|----------|----------------|
-| Quantum classifier implementations | `src/quantum/vqc.py`, `src/quantum/qsvm.py` |
-| Feature encoding utilities | `src/quantum/encoding.py` |
-| Benchmark runner | `src/quantum/benchmark.py` |
-| Experiment notebooks | `phase2/notebooks/` |
-| Saved quantum model params | `phase2/models/` |
-| Results and plots | `phase2/results/` |
-
-**The quantum dataset is already prepared.** You can load it directly:
-
-```python
-import numpy as np
-
-X_train = np.load("data/processed/X_train_quantum.npy")  # (227845, 8)
-X_test  = np.load("data/processed/X_test_quantum.npy")   # (56962, 8)
-y_train = np.load("data/processed/y_train_quantum.npy")
-y_test  = np.load("data/processed/y_test_quantum.npy")
-features = np.load("data/processed/quantum_features.npy") # feature names
-```
-
-For quantum training, start with a **small subset** (1,000–5,000 samples) — quantum simulation is slow:
-
-```python
-from sklearn.utils import resample
-X_small, y_small = resample(X_train, y_train, n_samples=2000, 
-                              stratify=y_train, random_state=42)
-```
-
-See [QUANTUM_PLAN.md](QUANTUM_PLAN.md) for the full step-by-step quantum implementation guide.
+*Part of the Credit Card Fraud Detection System — see root [README.md](../README.md)*
