@@ -56,7 +56,7 @@ export function renderDashboard(ctx) {
 function buildShell(ctx) {
   const { user } = ctx;
   const recent = Batches.recent(user.id, 5);
-  const stats  = computeStats();
+  const stats = computeStats();
   const modelUpdated = new Date(AppMeta.getModelLastUpdated())
     .toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -155,8 +155,8 @@ function buildShell(ctx) {
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                 <h2 class="section-title" id="tx-heading">
                   ${_state.selectedBatchId === 'all'
-                    ? `All Transactions <span style="font-size:13px;font-weight:500;color:var(--c-text-3)">(${_state.currentTxs.length} Total)</span>`
-                    : `Batch: <span style="font-weight:500;color:var(--c-text-3)">${_state.currentBatch?.fileName || 'Selected Batch'}</span>`}
+      ? `All Transactions <span style="font-size:13px;font-weight:500;color:var(--c-text-3)">(${_state.currentTxs.length} Total)</span>`
+      : `Batch: <span style="font-weight:500;color:var(--c-text-3)">${_state.currentBatch?.fileName || 'Selected Batch'}</span>`}
                 </h2>
                 ${_state.batches.length > 1 ? `
                   <select class="form-select" id="dashboard-batch-select" style="font-size:12px;padding:4px 28px 4px 10px;height:32px;max-width:280px;">
@@ -220,19 +220,19 @@ function renderStatsAndTrendHTML(stats, batches) {
   const recentBatches = batches.slice(0, 6).reverse();
   const sparkData = recentBatches.length > 0
     ? recentBatches.map(b => {
-        const total = b.transactions?.length || 1;
-        const fl = b.transactions?.filter(t => (t[_state.modelType] || t.classical)?.flag).length || 0;
-        const rate = Math.round((fl / total) * 100);
-        return { label: (b.fileName || 'Batch').slice(0, 4), rate, flagged: fl };
-      })
+      const total = b.transactions?.length || 1;
+      const fl = b.transactions?.filter(t => (t[_state.modelType] || t.classical)?.flag).length || 0;
+      const rate = Math.round((fl / total) * 100);
+      return { label: (b.fileName || 'Batch').slice(0, 4), rate, flagged: fl };
+    })
     : [
-        { label: 'W1', rate: 12, flagged: 3 },
-        { label: 'W2', rate: 18, flagged: 5 },
-        { label: 'W3', rate: 8,  flagged: 2 },
-        { label: 'W4', rate: 22, flagged: 6 },
-        { label: 'W5', rate: 15, flagged: 4 },
-        { label: 'Now', rate: stats.rate, flagged: stats.flagged },
-      ];
+      { label: 'W1', rate: 12, flagged: 3 },
+      { label: 'W2', rate: 18, flagged: 5 },
+      { label: 'W3', rate: 8, flagged: 2 },
+      { label: 'W4', rate: 22, flagged: 6 },
+      { label: 'W5', rate: 15, flagged: 4 },
+      { label: 'Now', rate: stats.rate, flagged: stats.flagged },
+    ];
 
   return `
     <div class="stat-card">
@@ -258,14 +258,14 @@ function renderStatsAndTrendHTML(stats, batches) {
       </div>
       <div class="trend-sparkline-wrap">
         ${sparkData.map(d => {
-          const barHeight = Math.max(12, Math.min(100, d.rate * 2.5));
-          const isHigh = d.rate >= 20;
-          return `
+    const barHeight = Math.max(12, Math.min(100, d.rate * 2.5));
+    const isHigh = d.rate >= 20;
+    return `
             <div class="trend-bar-col" title="${d.label}: ${d.rate}% (${d.flagged} flagged)">
               <div class="trend-bar${isHigh ? ' high' : ''}" style="height:${barHeight}%"></div>
               <span class="trend-bar-label">${d.label}</span>
             </div>`;
-        }).join('')}
+  }).join('')}
       </div>
     </div>`;
 }
@@ -302,10 +302,10 @@ function renderFilterRow() {
           value="${esc(_state.filterSearch)}">
       </div>
       <select class="form-select" id="risk-filter" aria-label="Filter by risk level" style="width:150px">
-        <option value="all"    ${_state.filterRisk==='all'    ?'selected':''}>All risk levels</option>
-        <option value="high"   ${_state.filterRisk==='high'   ?'selected':''}>High risk (≥70%)</option>
-        <option value="medium" ${_state.filterRisk==='medium' ?'selected':''}>Medium risk (40-69%)</option>
-        <option value="low"    ${_state.filterRisk==='low'    ?'selected':''}>Low risk (&lt;40%)</option>
+        <option value="all"    ${_state.filterRisk === 'all' ? 'selected' : ''}>All risk levels</option>
+        <option value="high"   ${_state.filterRisk === 'high' ? 'selected' : ''}>High risk (≥70%)</option>
+        <option value="medium" ${_state.filterRisk === 'medium' ? 'selected' : ''}>Medium risk (40-69%)</option>
+        <option value="low"    ${_state.filterRisk === 'low' ? 'selected' : ''}>Low risk (&lt;40%)</option>
       </select>
     </div>`;
 }
@@ -315,9 +315,9 @@ function filteredTxs() {
   if (_state.filterSearch) {
     const q = _state.filterSearch.toLowerCase();
     txs = txs.filter(tx =>
-      (tx.merchant||'').toLowerCase().includes(q) ||
-      (tx.country||'').toLowerCase().includes(q) ||
-      (tx.id||'').toLowerCase().includes(q));
+      (tx.merchant || '').toLowerCase().includes(q) ||
+      (tx.country || '').toLowerCase().includes(q) ||
+      (tx.id || '').toLowerCase().includes(q));
   }
   if (_state.filterRisk !== 'all') {
     txs = txs.filter(tx => {
@@ -343,8 +343,8 @@ function filteredTxs() {
 
 function renderTableSection(ctx) {
   const filterContainer = document.getElementById('filter-row-container');
-  const tableContainer  = document.getElementById('tx-table-container');
-  const pageContainer   = document.getElementById('pagination-container');
+  const tableContainer = document.getElementById('tx-table-container');
+  const pageContainer = document.getElementById('pagination-container');
   if (!tableContainer) return;
 
   if (!_state.currentBatch) {
@@ -360,10 +360,10 @@ function renderTableSection(ctx) {
   }
 
   if (filterContainer) filterContainer.innerHTML = renderFilterRow();
-  const txs   = filteredTxs();
+  const txs = filteredTxs();
   const total = txs.length;
   const pages = Math.max(1, Math.ceil(total / _state.pageSize));
-  const page  = Math.min(_state.page, pages);
+  const page = Math.min(_state.page, pages);
   const start = (page - 1) * _state.pageSize;
   const pageTxs = txs.slice(start, start + _state.pageSize);
 
@@ -388,10 +388,10 @@ function renderTableSection(ctx) {
         </tr></thead>
         <tbody>
           ${pageTxs.map(tx => {
-            const r = tx[_state.modelType] || tx.classical;
-            const pct  = Math.round((r?.score ?? 0) * 100);
-            const level= getRiskLevel(r?.score ?? 0);
-            return `
+    const r = tx[_state.modelType] || tx.classical;
+    const pct = Math.round((r?.score ?? 0) * 100);
+    const level = getRiskLevel(r?.score ?? 0);
+    return `
               <tr class="clickable${r?.flag ? ' flagged' : ''}"
                 onclick="navigate('/transaction/${tx.id}')"
                 role="link" tabindex="0" aria-label="Transaction: ${esc(tx.merchant)}, ₹${tx.amount}">
@@ -412,7 +412,7 @@ function renderTableSection(ctx) {
                   ${r?.flag ? `<span class="badge badge-high">${icon('alertTriangle', { size: 11 })} Flagged</span>` : `<span class="badge badge-low">${icon('check', { size: 11 })} Normal</span>`}
                 </td>
               </tr>`;
-          }).join('')}
+  }).join('')}
           ${pageTxs.length === 0 ? `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--c-text-3)">No records match your filters.</td></tr>` : ''}
         </tbody>
       </table>
@@ -421,12 +421,12 @@ function renderTableSection(ctx) {
   const mobileCards = `
     <div class="table-wrap" id="mobile-cards" style="display:none">
       ${pageTxs.length === 0
-        ? `<div style="text-align:center;padding:32px;color:var(--c-text-3)">No records match your filters.</div>`
-        : pageTxs.map(tx => {
-            const r = tx[_state.modelType] || tx.classical;
-            const pct  = Math.round((r?.score ?? 0) * 100);
-            const level= getRiskLevel(r?.score ?? 0);
-            return `
+      ? `<div style="text-align:center;padding:32px;color:var(--c-text-3)">No records match your filters.</div>`
+      : pageTxs.map(tx => {
+        const r = tx[_state.modelType] || tx.classical;
+        const pct = Math.round((r?.score ?? 0) * 100);
+        const level = getRiskLevel(r?.score ?? 0);
+        return `
               <div class="tx-card" onclick="navigate('/transaction/${tx.id}')" role="link" tabindex="0" style="padding:var(--sp-4);border-bottom:1px solid var(--c-border)">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                   <span style="font-weight:600">${esc(tx.merchant || '—')}</span>
@@ -439,7 +439,7 @@ function renderTableSection(ctx) {
                   </span>
                 </div>
               </div>`;
-          }).join('')}
+      }).join('')}
     </div>`;
 
   tableContainer.innerHTML = desktopTable + mobileCards;
@@ -475,7 +475,7 @@ function renderTableSection(ctx) {
 
 function renderPagination(page, pages, total) {
   const start = Math.max(1, page - 2);
-  const end   = Math.min(pages, page + 2);
+  const end = Math.min(pages, page + 2);
   let html = `<div class="pagination" role="navigation" aria-label="Pagination">
     <button class="page-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''} aria-label="Previous page">${icon('chevronDown', { size: 12, className: 'rotate-90' })}</button>`;
   for (let p = start; p <= end; p++) {
@@ -489,11 +489,11 @@ function renderPagination(page, pages, total) {
 
 function applyResponsiveTable() {
   const desktop = document.getElementById('desktop-table');
-  const mobile  = document.getElementById('mobile-cards');
+  const mobile = document.getElementById('mobile-cards');
   if (!desktop || !mobile) return;
   const isNarrow = window.innerWidth < 700;
   desktop.style.display = isNarrow ? 'none' : 'block';
-  mobile.style.display  = isNarrow ? 'block' : 'none';
+  mobile.style.display = isNarrow ? 'block' : 'none';
 }
 
 function mountShell(ctx) {
@@ -503,7 +503,7 @@ function mountShell(ctx) {
   window.addEventListener('resize', applyResponsiveTable);
 
   document.getElementById('toggle-classical')?.addEventListener('click', () => switchModel('classical', ctx));
-  document.getElementById('toggle-quantum')?.addEventListener('click',   () => switchModel('quantum',   ctx));
+  document.getElementById('toggle-quantum')?.addEventListener('click', () => switchModel('quantum', ctx));
   document.getElementById('export-btn')?.addEventListener('click', () => doExport(user));
 
   document.getElementById('dashboard-batch-select')?.addEventListener('change', e => {
@@ -526,10 +526,10 @@ function mountShell(ctx) {
 
 function switchModel(type, ctx) {
   _state.modelType = type;
-  document.getElementById('toggle-classical')?.classList.toggle('active',  type === 'classical');
-  document.getElementById('toggle-quantum')?.classList.toggle('active',    type === 'quantum');
-  document.getElementById('toggle-quantum')?.classList.toggle('quantum',   type === 'quantum');
-  
+  document.getElementById('toggle-classical')?.classList.toggle('active', type === 'classical');
+  document.getElementById('toggle-quantum')?.classList.toggle('active', type === 'quantum');
+  document.getElementById('toggle-quantum')?.classList.toggle('quantum', type === 'quantum');
+
   const stats = computeStats();
   const sg = document.getElementById('stats-grid');
   if (sg) sg.innerHTML = renderStatsAndTrendHTML(stats, _state.batches);
@@ -578,7 +578,7 @@ function ctx_export(txs, batch, modelType, user) {
 }
 
 function mountUploadZone(ctx) {
-  const zone    = document.getElementById('upload-zone');
+  const zone = document.getElementById('upload-zone');
   const fileInput = document.getElementById('csv-file-input');
   if (!zone || !fileInput) return;
 
@@ -678,12 +678,12 @@ async function handleFileUpload(file, ctx) {
     generateForBatch(user.id, batch.id, scored, user.notificationPrefs);
 
     _state.uploading = false;
-    _state.batches   = Batches.list(user.id);
+    _state.batches = Batches.list(user.id);
     _state.currentBatch = batch;
-    _state.currentTxs   = scored;
+    _state.currentTxs = scored;
     _state.page = 1;
     _state.filterSearch = '';
-    _state.filterRisk   = 'all';
+    _state.filterRisk = 'all';
 
     window.showToast(`Analyzed ${scored.length.toLocaleString('en-IN')} transactions successfully.`, 'success');
     renderDashboard(ctx);
@@ -698,4 +698,4 @@ async function handleFileUpload(file, ctx) {
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(str) { return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }

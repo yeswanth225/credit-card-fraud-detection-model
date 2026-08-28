@@ -61,4 +61,4 @@ logs/
 # Testing
 .pytest_cache/
 .coverage
-htmlcov/
+htmlcov/node_modules/
