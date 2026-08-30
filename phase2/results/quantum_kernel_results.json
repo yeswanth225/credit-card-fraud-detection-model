@@ -20,29 +20,29 @@
     },
     "n_parameters": 4
   },
-  "training_time_seconds": 23.752,
+  "training_time_seconds": 21.215,
   "n_train": 100,
   "n_train_fraud": 50,
-  "inference_time_seconds": 19.922,
+  "inference_time_seconds": 10.374,
   "n_test": 25,
   "n_test_fraud": 1,
   "metrics": {
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "accuracy": 0.6,
+    "accuracy": 0.64,
     "roc_auc": 0.08333333333333337,
     "pr_auc": 0.043478260869565216,
-    "false_positive_rate": 0.375,
+    "false_positive_rate": 0.3333333333333333,
     "false_negative_rate": 1.0,
     "true_positives": 0,
-    "true_negatives": 15,
-    "false_positives": 9,
+    "true_negatives": 16,
+    "false_positives": 8,
     "false_negatives": 1,
     "confusion_matrix": [
       [
-        15,
-        9
+        16,
+        8
       ],
       [
         1,

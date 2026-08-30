@@ -22,10 +22,9 @@ alembic>=1.13.0
 # Environment
 python-dotenv>=1.0.0
 
-# Quantum (optional)
-pennylane>=0.30.0
-qiskit>=0.45.0
-qiskit-aer>=0.12.0
+# Quantum (see phase2/requirements_quantum.txt for the full quantum stack)
+# qiskit>=1.0 and qiskit-machine-learning>=0.8 are required for Phase 2 experiments.
+# Install with: pip install -r phase2/requirements_quantum.txt
 
 # Experiment tracking
 mlflow>=2.9.0
