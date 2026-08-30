@@ -2,7 +2,7 @@
 
 ## What Has Been Built
 
-This project detects credit card fraud using machine learning, and is being extended toward quantum machine learning for benchmarking purposes.
+This project detects credit card fraud using machine learning and includes a completed quantum benchmarking phase for research purposes. The project compares classical XGBoost against QSVC and VQC experiments run on a local Qiskit simulator.
 
 ---
 
@@ -77,13 +77,13 @@ A dashboard for fraud analysts.
 
 ### 4. Quantum ML Pipeline ✅ Complete
 
-Phase 2 is now complete. Reserved directory: `src/quantum/` and `phase2/`
+Phase 2 is complete in the `phase2/` directory and uses local Qiskit Statevector simulation.
 
 Completed components:
 - **Feature reduction:** Top 4 features extracted for quantum use.
 - **VQC:** Variational Quantum Classifier using Qiskit.
-- **QSVC:** Quantum Support Vector Machine using Qiskit.
-- **Benchmark:** Compare quantum models against the Phase 1 XGBoost baseline (using a local simulator).
+- **QSVC:** Quantum Support Vector Classifier using Qiskit.
+- **Benchmark:** Compare quantum models against the Phase 1 XGBoost baseline using the actual local-simulation configuration in `phase2/quantum/config.py`.
 
 ---
 
@@ -93,9 +93,9 @@ Completed components:
 |------|--------|-------|
 | Classical ML pipeline | ✅ Done | Full preprocessing + XGBoost + SHAP |
 | Model evaluation | ✅ Done | On real held-out test set |
-| Quantum-ready 4-feature dataset | ✅ Done | Saved as .npy arrays in data/processed/ |
-| FastAPI backend | 🟡 Partial | Core endpoints working, some in progress |
-| React dashboard | 🟡 Partial | Connected to backend, actively developed |
+| Quantum-ready 4-feature dataset | ✅ Done | Saved as .npy arrays in `data/processed/` |
+| FastAPI backend | ✅ Functional | Core endpoints working |
+| React dashboard | ✅ Functional | Connected to backend and running locally |
 | VQC implementation | ✅ Done | Phase 2 completed |
 | QSVC implementation | ✅ Done | Phase 2 completed |
 | Classical vs quantum benchmark | ✅ Done | Phase 2 completed (using local simulator) |

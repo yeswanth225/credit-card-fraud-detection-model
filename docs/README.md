@@ -1,8 +1,8 @@
 # Credit Card Fraud Detection — Classical + Quantum
 
-A fraud detection system built in two stages: a completed classical ML baseline (XGBoost), and an upcoming quantum machine learning phase (VQC / QSVM) evaluated against it.
+A fraud detection system built in two stages: a completed classical ML baseline (XGBoost), and a completed local-simulation quantum machine learning phase (QSVC + VQC) evaluated against it.
 
-> **Honest status:** Phase 1 (classical XGBoost baseline) is **complete and evaluated on real data**. The quantum implementation has **not started yet**. The frontend and backend are functional and under active development.
+> **Honest status:** Phase 1 (classical XGBoost baseline) is **complete and evaluated on real data**. Phase 2 (QSVC + VQC on local Qiskit simulation) is **complete as an experimental benchmark**. The frontend and backend are functional and under active development.
 
 ---
 
@@ -10,10 +10,10 @@ A fraud detection system built in two stages: a completed classical ML baseline 
 
 Credit card fraud is rare — only about 0.17% of transactions are fraudulent — which makes it a hard detection problem. This project:
 
-1. **Trains a classical XGBoost model** on 284,807 real European credit card transactions and achieves strong performance (PR-AUC 0.8557, F1 0.8541).
-2. **Prepares a quantum-ready dataset** (8 most important features) for comparison with quantum classifiers.
+1. **Trains a classical XGBoost model** on 284,807 real European credit card transactions and achieves strong performance (PR-AUC 0.8716, F1 0.8723).
+2. **Prepares a quantum-ready dataset** (4 selected quantum features) and evaluates QSVC + VQC on a local simulator.
 3. **Serves predictions through a FastAPI backend** connected to a React + Vite dashboard with live fraud scores and SHAP explanations.
-4. **Plans a quantum benchmarking phase** (VQC and QSVM) to honestly answer: can quantum computing improve fraud detection?
+4. **Benchmarks quantum experiments honestly** to test feasibility and compare them against the classical baseline without claiming quantum advantage.
 
 ---
 
@@ -26,12 +26,12 @@ Credit card fraud is rare — only about 0.17% of transactions are fraudulent �
 | XGBoost classical model | ✅ Complete |
 | Hyperparameter tuning | ✅ Complete |
 | Threshold optimization | ✅ Complete |
-| 8-feature quantum-ready dataset | ✅ Prepared |
-| FastAPI backend | 🟡 In development |
-| React + Vite dashboard | 🟡 In development |
-| VQC (Variational Quantum Classifier) | ⏳ Not started |
-| QSVM (Quantum SVM) | ⏳ Not started |
-| Classical vs quantum benchmark | ⏳ Not started |
+| 4-feature quantum-ready dataset | ✅ Complete |
+| FastAPI backend | ✅ Functional |
+| React + Vite dashboard | ✅ Functional |
+| VQC (Variational Quantum Classifier) | ✅ Complete (local simulator) |
+| QSVC (Quantum Support Vector Classifier) | ✅ Complete (local simulator) |
+| Classical vs quantum benchmark | ✅ Complete (experimental) |
 
 ---
 

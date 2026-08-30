@@ -34,13 +34,14 @@ def test_api_docs_available(client):
 
 
 def test_analyst_metrics_endpoint(client):
-    """Analyst metrics endpoint should return model performance data."""
+    """Analyst metrics endpoint should return model performance data without server errors."""
     response = client.get("/api/analyst/metrics")
-    # Accept 200 or 404 if dataset is not present locally
-    assert response.status_code in (200, 404, 422, 500)
+    assert response.status_code != 500
+    assert response.status_code in (200, 404, 422)
 
 
 def test_analyst_transactions_endpoint(client):
-    """Analyst transactions endpoint should be reachable."""
+    """Analyst transactions endpoint should be reachable without a server error."""
     response = client.get("/api/analyst/transactions")
-    assert response.status_code in (200, 404, 422, 500)
+    assert response.status_code != 500
+    assert response.status_code in (200, 404, 422)

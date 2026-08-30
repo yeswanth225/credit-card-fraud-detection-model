@@ -42,13 +42,16 @@ tmp/
 temp/
 .cache/
 
-# Generated data and local duplicates
-data/raw/
-data/processed/
-notebooks/*.ipynb
-notebooks/.ipynb_checkpoints/
-notebooks/data/
-phase1/notebooks/
+# Generated or local-only dataset files
+# Keep required processed model artifacts and notebooks tracked
+# unless they are deliberately local-only files.
+data/raw/*.csv
+data/processed/*.parquet
+data/processed/*.csv
+data/processed/*.pkl
+
+# Notebook checkpoints only
+**/.ipynb_checkpoints/
 
 # OS and editor metadata
 .vscode/
