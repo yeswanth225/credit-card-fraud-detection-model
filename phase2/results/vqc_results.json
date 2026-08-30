@@ -4,10 +4,10 @@
     "n_qubits": 4,
     "zz_reps": 2,
     "vqc_reps": 2,
-    "vqc_max_iter": 100,
+    "vqc_max_iter": 20,
     "vqc_optimizer": "COBYLA",
-    "train_subset_size": 800,
-    "test_subset_size": 200,
+    "train_subset_size": 100,
+    "test_subset_size": 25,
     "balanced_train": true,
     "random_seed": 42,
     "shots": null
@@ -23,41 +23,41 @@
     },
     "n_parameters": 16
   },
-  "training_time_seconds": 645.026,
-  "n_train": 800,
-  "n_train_fraud": 394,
-  "n_optimizer_iterations": 0,
-  "final_loss": null,
+  "training_time_seconds": 7.957,
+  "n_train": 100,
+  "n_train_fraud": 50,
+  "n_optimizer_iterations": "Not available",
+  "final_loss": "Not available",
   "loss_history": [],
-  "inference_time_seconds": 2.17,
-  "n_test": 200,
+  "inference_time_seconds": 0.151,
+  "n_test": 25,
   "n_test_fraud": 1,
   "metrics": {
-    "precision": 0.014925373134328358,
+    "precision": 0.08333333333333333,
     "recall": 1.0,
-    "f1": 0.029411764705882353,
-    "accuracy": 0.67,
-    "roc_auc": 0.949748743718593,
-    "pr_auc": 0.09090909090909091,
-    "false_positive_rate": 0.3316582914572864,
+    "f1": 0.15384615384615385,
+    "accuracy": 0.56,
+    "roc_auc": 0.5416666666666667,
+    "pr_auc": 0.08333333333333333,
+    "false_positive_rate": 0.4583333333333333,
     "false_negative_rate": 0.0,
     "true_positives": 1,
-    "true_negatives": 133,
-    "false_positives": 66,
+    "true_negatives": 13,
+    "false_positives": 11,
     "false_negatives": 0,
     "confusion_matrix": [
       [
-        133,
-        66
+        13,
+        11
       ],
       [
         0,
         1
       ]
     ],
-    "n_samples": 200,
+    "n_samples": 25,
     "n_fraud": 1,
-    "n_legit": 199,
+    "n_legit": 24,
     "threshold": 0.5
   }
 }

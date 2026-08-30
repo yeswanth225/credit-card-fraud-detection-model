@@ -1,37 +1,52 @@
 # Phase 2 — Quantum Machine Learning for Fraud Detection
 
-> Implements Quantum Kernel SVM (QSVC) and Variational Quantum Circuit (VQC) classifiers using PennyLane to detect credit card fraud on a 4-qubit quantum simulator.
+> Implements **QSVC** (Quantum Kernel SVM) and **VQC** (Variational Quantum Classifier)
+> using **Qiskit** on a 4-qubit local statevector simulator.
+
+---
+
+## ⚠️ Important Caveats
+
+| Item | Status |
+|------|--------|
+| **Backend** | Local Qiskit StatevectorSampler (CPU, ideal/noiseless) |
+| **IBM Quantum hardware** | ❌ NOT integrated |
+| **PennyLane** | ❌ NOT used — framework is Qiskit + qiskit-machine-learning |
+| **Training data size** | 100 samples (quantum kernel scales O(N²)) |
+| **Test set reliability** | Limited — ~1 fraud case in 25 test samples |
 
 ---
 
 ## Overview
 
-Phase 2 explores whether quantum computing can improve fraud detection over classical baselines. We implement two quantum approaches:
+Phase 2 explores quantum machine learning for fraud detection using a small, controlled subset of the Phase 1 dataset. Two quantum models are implemented:
 
-1. **Quantum Kernel SVM (QSVC)** — Uses a quantum feature map to compute a kernel matrix, then feeds it into a classical SVM.
-2. **Variational Quantum Circuit (VQC)** — A parameterized quantum circuit trained end-to-end with gradient descent.
+1. **QSVC** — ZZFeatureMap → FidelityQuantumKernel → Classical SVM
+2. **VQC** — ZZFeatureMap → RealAmplitudes ansatz → COBYLA optimizer
 
-Both are evaluated on a balanced 50-sample subset of the Credit Card Fraud Detection dataset using the **PennyLane** quantum simulator (`default.qubit`).
+Both run on the **local Qiskit Statevector simulator** — no cloud access or IBM Quantum account required.
+
+Classical comparison uses Phase 1 XGBoost results loaded from `data/processed/phase1_results.json`.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Install quantum dependencies:
+# Install quantum dependencies
 pip install -r phase2/requirements_quantum.txt
 
-# Run the toy experiment (fastest, 4 samples, educational):
+# 1. Sanity check: 4-sample toy pipeline (<10 seconds)
 python -m phase2.experiments.toy_qml_experiment
 
-# Run the quantum kernel experiment (real dataset, ~2-3 minutes):
-python -m phase2.experiments.quantum_kernel_experiment
+# 2. Full benchmark: QSVC + VQC + XGBoost baseline (~90 minutes, QSVC is slow)
+python -m phase2.experiments.phase2_benchmark
 
-# Run the VQC experiment:
-python -m phase2.experiments.vqc_experiment
+# 3. XGBoost baseline only (instant, loads from JSON)
+python -m phase2.experiments.phase2_benchmark --skip-quantum
 
-# Run all experiments:
-python -m phase2.experiments.run_all
+# 4. Quantum models only (skip XGBoost loading)
+python -m phase2.experiments.phase2_benchmark --skip-xgboost
 ```
 
 ---
@@ -40,211 +55,176 @@ python -m phase2.experiments.run_all
 
 ```
 phase2/
-├── README.md                         ← This file
-├── requirements_quantum.txt          ← PennyLane + scikit-learn + dependencies
-├── __init__.py                       ← Package init
+├── README.md                          This file
+├── requirements_quantum.txt           qiskit, qiskit-machine-learning, etc.
+├── __init__.py
 │
-├── quantum/                          ← Core QML modules
-│   ├── __init__.py
-│   ├── config.py                     ← Global settings (n_qubits, backend, shots)
-│   ├── circuits.py                   ← Quantum circuit definitions
-│   ├── feature_encoding.py           ← ZZFeatureMap, PauliMap, Amplitude encoding
-│   ├── data_preparation.py           ← Dataset loading, balancing, normalization
-│   ├── quantum_kernel.py             ← Kernel matrix computation
-│   ├── qsvc_model.py                 ← QSVC training and evaluation
-│   ├── vqc_model.py                  ← VQC training (Adam optimizer)
-│   └── evaluation.py                 ← Metrics: AUC-ROC, precision, recall, F1
+├── quantum/                           Core QML modules
+│   ├── config.py                      QuantumConfig dataclass (all parameters here)
+│   ├── data_preparation.py            Subset sampling + MinMaxScaler (no leakage)
+│   ├── feature_encoding.py            ZZFeatureMap + angle-encoding circuit builders
+│   ├── quantum_kernel.py              FidelityQuantumKernel (ComputeUncompute)
+│   ├── circuits.py                    Circuit resource utilities
+│   ├── qsvc_model.py                  QSVCExperiment class + run_qsvc_experiment()
+│   ├── vqc_model.py                   VQCExperiment class + run_vqc_experiment()
+│   └── evaluation.py                  Fraud-aware metrics (PR-AUC, ROC-AUC, F1…)
 │
-├── experiments/                      ← Runnable experiments
-│   ├── toy_qml_experiment.py         ← 4-sample synthetic test
-│   ├── quantum_kernel_experiment.py  ← Real dataset QSVC (50 samples)
-│   ├── vqc_experiment.py             ← VQC training experiment
-│   ├── feature_map_experiment.py     ← Compare encoding strategies
-│   ├── feature_count_experiment.py   ← Compare 2, 3, 4 qubit circuits
-│   ├── noise_experiment.py           ← Depolarizing noise sensitivity
-│   ├── benchmark.py                  ← Classical vs. Quantum comparison
-│   ├── run_all.py                    ← Sequential runner for all experiments
-│   └── visualize.py                  ← Result plots and charts
+├── experiments/
+│   ├── toy_qml_experiment.py          Educational end-to-end sanity check
+│   ├── phase2_benchmark.py            PRIMARY: QSVC vs VQC vs XGBoost benchmark
+│   ├── quantum_kernel_experiment.py   Standalone QSVC on real dataset
+│   ├── vqc_experiment.py              Standalone VQC experiment
+│   ├── feature_count_experiment.py    2/4/8-qubit comparison
+│   ├── feature_map_experiment.py      Feature map comparison
+│   ├── noise_experiment.py            Depolarizing noise sensitivity
+│   └── run_all.py                     Sequential runner
 │
-├── results/                          ← Saved JSON/CSV outputs
-│   ├── quantum_kernel_results.json
-│   ├── vqc_results.json
-│   └── model_comparison.csv
-│
-├── models/                           ← Saved model checkpoints
-└── notebooks/                        ← Jupyter notebooks for exploration
+└── results/
+    ├── phase2_benchmark_final.json    PRIMARY result file (all 3 models)
+    ├── quantum_kernel_results.json    QSVC individual results
+    ├── vqc_results.json               VQC individual results
+    └── model_comparison.csv           CSV summary
+```
+
+---
+
+## Configuration (`quantum/config.py`)
+
+All parameters live in one place — `QuantumConfig`:
+
+```python
+QuantumConfig(
+    n_qubits=4,             # Qubits = number of features used
+    feature_indices=[0,1,2,3],  # V14, V4, V12, V8 (top-4 by XGBoost importance)
+    train_subset_size=100,  # Must stay small due to O(N²) kernel
+    test_subset_size=25,    # Stratified at real fraud rate (~0.17%)
+    balanced_train=True,    # 50% fraud / 50% legit in training subset
+    random_seed=42,
+    shots=None,             # None = exact statevector (fastest, no shot noise)
+    zz_reps=2,              # ZZFeatureMap repetitions
+    vqc_reps=2,             # RealAmplitudes repetitions
+    vqc_max_iter=20,        # COBYLA max iterations
+    vqc_optimizer="COBYLA",
+    svm_C=1.0,              # SVM regularisation
+)
 ```
 
 ---
 
 ## Quantum Architecture
 
-### Configuration (`config.py`)
-
-```python
-N_QUBITS = 4           # Number of qubits
-N_LAYERS = 2           # Ansatz layers for VQC
-BACKEND = "default.qubit"  # PennyLane simulator
-SHOTS = 1024           # Measurement shots
-FEATURES = 4           # Features per qubit
-```
-
-### Feature Encoding
-
-We use **ZZFeatureMap** (default) — the same encoding used in IBM Qiskit's quantum kernel paper:
+### QSVC Pipeline
 
 ```
-|ψ(x)⟩ = U_ZZ(x)|0⟩^n
-
-Where U_ZZ encodes pairs of features via:
-  Rz(2 * xi)     → single-feature rotation
-  CNOT           → entanglement
-  Rz(2*(π-xi)(π-xj))  → two-feature cross term
+Classical features (V14, V4, V12, V8)
+  → MinMaxScaler (fit on train only) → [-π, π]
+  → ZZFeatureMap (4 qubits, reps=2)  → quantum state |φ(x)⟩
+  → FidelityQuantumKernel            → K(x,z) = |⟨φ(x)|φ(z)⟩|²
+  → sklearn SVC (precomputed kernel) → fraud / legitimate
 ```
 
-Alternative encodings tested:
-- **PauliFeatureMap** — Richer cross terms, slower
-- **Amplitude Encoding** — Fewer qubits needed, requires normalization
+Kernel computation: **O(N²)** — 100 training samples = 10,000 circuit evaluations.
 
-### VQC Ansatz
+### VQC Pipeline
 
 ```
-|ψ(θ)⟩ = U_ansatz(θ) |ψ(x)⟩
-
-Layer structure (repeated N_LAYERS times):
-  Ry(θ_i)   → Parameterized rotation on each qubit
-  CNOT chain → Entanglement between adjacent qubits
+Classical features (V14, V4, V12, V8)
+  → MinMaxScaler (fit on train only) → [-π, π]
+  → ZZFeatureMap (4 qubits, reps=2)  → encodes data
+  → RealAmplitudes ansatz (reps=2)   → 12 trainable parameters
+  → Measurement                      → class probabilities
+  → COBYLA optimizer                 → minimises cross-entropy loss
 ```
-
-Output: Expectation value ⟨Z_0⟩ → sigmoid → fraud probability
 
 ---
 
-## Experiments Reference
+## Data Preparation (No Leakage)
 
-### `toy_qml_experiment.py`
-- **Purpose**: Educational demo with 4 synthetic samples
-- **Validates**: Circuit construction, kernel computation, QSVC inference
-- **Runtime**: ~5 seconds
-- **Expected**: QSVC correctly classifies `[0, 0, 1, 1]` from `[1, 0, 0, 1]` features
+```
+Phase 1 artifacts:
+  X_train_quantum.npy  (227,845 × 8)
+  X_test_quantum.npy   (56,962 × 8)
+  y_train_quantum.npy  (227,845 labels)
+  y_test_quantum.npy   (56,962 labels)
 
-### `quantum_kernel_experiment.py`
-- **Purpose**: Real fraud dataset evaluation
-- **Dataset**: 25 fraud + 25 legitimate (50 total, balanced)
-- **Train/Test**: 40 train / 10 test (80/20 split)
-- **Kernel computations**: 40×40 train + 40×10 test = 1,760 quantum evaluations
-- **Runtime**: ~2–4 minutes on local CPU
-- **Outputs**: `results/quantum_kernel_results.json`
+Phase 2 subset:
+  1. Select 4 features: X[:, [0,1,2,3]]
+  2. Training subset: 100 samples, 50 fraud + 50 legit (balanced)
+  3. Test subset:     25 samples, stratified at real 0.17% rate
+  4. MinMaxScaler → [-π, π]:  FIT on training subset ONLY
+                               TRANSFORM applied to both train + test
+```
 
-### `vqc_experiment.py`
-- **Purpose**: End-to-end VQC training
-- **Optimizer**: Adam (lr=0.01)
-- **Epochs**: 50
-- **Loss**: Binary Cross-Entropy on ⟨Z_0⟩
-- **Outputs**: `results/vqc_results.json`
-
-### `feature_map_experiment.py`
-- Compares **ZZFeatureMap vs. PauliFeatureMap vs. Amplitude Encoding**
-- Evaluates AUC-ROC for each on the same 50-sample split
-
-### `feature_count_experiment.py`
-- Compares **2-qubit vs. 3-qubit vs. 4-qubit** circuits
-- Measures accuracy vs. circuit depth trade-off
-
-### `noise_experiment.py`
-- Adds **depolarizing noise** (p = 0.01, 0.05, 0.10)
-- Shows how fraud classification degrades with gate noise
-
-### `benchmark.py`
-- Side-by-side comparison: Classical (XGBoost, RF, LR) vs. Quantum (QSVC, VQC)
-- Same train/test split, same features
-- Outputs `results/model_comparison.csv`
+> The MinMaxScaler is a **second** scaling step on top of Phase 1's StandardScaler.
+> It is required to map feature values into the rotation angle range for quantum gates.
+> The fit-on-train-only rule prevents data leakage.
 
 ---
 
-## Results
+## Benchmark Results (August 29, 2026)
 
-### Quantum Kernel SVM
+All metrics generated by running `python -m phase2.experiments.phase2_benchmark`.
+XGBoost metrics loaded from `data/processed/phase1_results.json` (not re-trained).
+
+| Metric | QSVC | VQC | XGBoost |
+|--------|------|-----|---------|
+| Training samples | 100 | 100 | 227,845 |
+| Test samples | 25 | 25 | 56,962 |
+| Features | 4 | 4 | 30 |
+| Training time | ~82 min | ~8 s | Not available |
+| Inference time | ~15 s | ~0.17 s | Not available |
+| ROC-AUC | 0.0833 | 0.9167 | 0.9692 |
+| PR-AUC | 0.0435 | 0.3333 | 0.8716 |
+| F1 Score | 0.0 | 0.1667 | 0.8723 |
+| Recall | 0.0 | 1.0 | 0.8367 |
+| Precision | 0.0 | 0.0909 | 0.9111 |
+
+> ⚠️ **These are NOT comparable numbers.** XGBoost uses 2,000× more training data.
+> Quantum metrics reflect feasibility on a tiny subset, not production performance.
+
+---
+
+## Toy Experiment (`toy_qml_experiment.py`)
+
+An educational sanity check — verifies the complete pipeline on 4 hand-crafted samples:
 
 ```
-Dataset: 50 samples (25 fraud, 25 legitimate)
-Train: 40 samples  |  Test: 10 samples
-Features: 4 (Amount, Hour, Distance, V1_proxy)
+Checks:
+  1. Feature scaling to [0, π] for ZZFeatureMap
+  2. ZZFeatureMap circuit construction
+  3. Quantum kernel matrix (diagonal=1, within-class > cross-class)
+  4. QSVC training and prediction (expected: 100% accuracy on 4 samples)
+  5. End-to-end prediction path
 
-Confusion Matrix:
-  [[4  1]
-   [1  4]]
-
-Accuracy:  80.0%
-Precision: 80.0%
-Recall:    80.0%
-F1-Score:  80.0%
-AUC-ROC:  ~0.82
+Expected output: [PASS] QSVC correctly classified all 4 samples.
+Runtime: < 10 seconds
 ```
 
-### VQC Results (50 epochs)
-
-```
-Final Training Loss: 0.31
-Test Accuracy: ~78%
-AUC-ROC: ~0.78
-```
-
-### Model Comparison
-
-| Model | Type | AUC-ROC | Accuracy | Notes |
-|:---|:---|:---|:---|:---|
-| XGBoost | Classical | 0.9849 | 99.8% | Full 284K dataset |
-| Random Forest | Classical | 0.9821 | 99.7% | Full 284K dataset |
-| Logistic Regression | Classical | 0.9743 | 99.3% | Full 284K dataset |
-| QSVC (4 qubits) | Quantum | ~0.82 | 80% | 50-sample sim |
-| VQC (4 qubits) | Quantum | ~0.78 | 78% | 50-sample sim |
-
-> **Note**: The quantum models are evaluated on a 50-sample subset due to the O(n²) kernel matrix computation complexity. Classical models benefit from the full 284,807-sample dataset.
+Run this first to verify your environment is working.
 
 ---
 
 ## Dependencies
 
+See `phase2/requirements_quantum.txt`. Key packages:
+
 ```
-pennylane>=0.38
-pennylane-lightning>=0.38
+qiskit>=1.0
+qiskit-machine-learning>=0.8
+qiskit-algorithms>=0.3
 scikit-learn>=1.3
 numpy>=1.24
-pandas>=2.0
-matplotlib>=3.7
-scipy>=1.11
-qiskit>=1.0         (optional, for Qiskit backend)
-```
-
-Install:
-```bash
-pip install -r phase2/requirements_quantum.txt
 ```
 
 ---
 
-## Key Findings
+## Known Limitations
 
-1. **Quantum kernels work** — QSVC achieves 80% accuracy on the balanced 50-sample test even on a simulator with no noise.
-
-2. **Classical still dominates** on large datasets — XGBoost at 0.9849 AUC vs QSVC at ~0.82 AUC. The difference is data size, not model quality.
-
-3. **Feature encoding matters** — ZZFeatureMap outperforms simple angle encoding by ~8% AUC on this dataset.
-
-4. **4 qubits is a sweet spot** — 2 qubits underfit; 5+ qubits cause barren plateau issues during VQC training.
-
-5. **Noise sensitivity** — At 10% depolarizing noise, QSVC accuracy drops from 80% to ~65%, highlighting the need for error mitigation on real hardware.
-
----
-
-## Next Steps (Phase 3)
-
-- [ ] Test on real IBM Quantum hardware (Brisbane/Kyoto)
-- [ ] Implement quantum error mitigation (ZNE, PEC)
-- [ ] Explore Quantum Neural Networks (QNN) with 8+ qubits
-- [ ] Implement hybrid classical-quantum pipeline (XGBoost features → VQC)
-- [ ] Benchmark on GPU-accelerated simulator (lightning.gpu)
+1. **Statistical reliability** — ~1 fraud case in 25 test samples makes recall/precision/F1 unreliable
+2. **QSVC is slow** — O(N²) kernel; 100 samples ≈ 82 minutes; 200 samples ≈ 5+ hours
+3. **Noiseless simulation only** — Real hardware would degrade results significantly
+4. **Small feature count** — Only 4 of 30 features used (quantum circuit depth constraint)
+5. **No IBM Quantum** — Hardware integration is a Phase 3 goal
 
 ---
 

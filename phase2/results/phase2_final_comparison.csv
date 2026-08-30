@@ -1,0 +1,4 @@
+model,model_type,n_samples_train,n_samples_eval,n_features,n_qubits,pr_auc,roc_auc,f1,precision,recall,fpr,accuracy,training_time_s,inference_time_s,backend,source
+XGBoost (Phase 1),Classical,227845,,30,N/A,0.8716329310770835,0.9692409673492357,0.8723404255319149,0.9111111111111111,0.8367346938775511,0.00014068655036578504,0.9995786664794073,Not measured,Not measured,CPU (XGBoost),Loaded from phase1_results.json
+QSVC,Quantum,100,198,4,4,0.7522865310300925,0.7656122448979591,0.6850828729281768,0.7469879518072289,0.6326530612244898,,0.7121212121212122,73.266,136.169,"Qiskit Statevector (local, ideal)",Phase 2 final evaluation (this run)
+VQC,Quantum,100,198,4,4,0.6142359598583729,0.6666326530612244,0.6571428571428571,0.6160714285714286,0.7040816326530612,,0.6363636363636364,14.841,3.401,"Qiskit Statevector (local, ideal)",Phase 2 final evaluation (this run)

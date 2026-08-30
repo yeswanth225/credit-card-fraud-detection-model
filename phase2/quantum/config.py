@@ -104,8 +104,8 @@ class QuantumConfig:
     feature_indices: List[int] = field(default_factory=lambda: [0, 1, 2, 3])
 
     # --- Dataset sub-sampling ---
-    train_subset_size: int = 800
-    test_subset_size: int = 200
+    train_subset_size: int = 100
+    test_subset_size: int = 25
     balanced_train: bool = True
 
     # --- Reproducibility ---
@@ -122,7 +122,7 @@ class QuantumConfig:
     vqc_reps: int = 2
 
     # --- VQC training ---
-    vqc_max_iter: int = 100
+    vqc_max_iter: int = 20
     vqc_optimizer: str = "COBYLA"
 
     # --- QSVC regularisation ---

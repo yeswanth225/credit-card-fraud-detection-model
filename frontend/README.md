@@ -1,18 +1,19 @@
-# [cred] — Fraud Detection Dashboard
+# cred ai — Financial Fraud Intelligence Platform
 
-> A premium, production-grade browser SPA for credit card fraud detection. Built with Vanilla HTML, CSS, and JavaScript. No framework dependencies. Powered by a classical XGBoost proxy scorer with a Quantum VQC toggle.
+> A production-grade financial transaction intelligence and fraud investigation platform. Built with Astryx design principles, Three.js spatial transaction-flow visualization, and hybrid Classical + Quantum ML scoring models.
 
 ---
 
 ## Overview
 
-`[cred]` is a fully client-side fraud detection dashboard that:
+`cred ai` is a financial transaction intelligence platform that:
 
-- Analyzes batch CSV transaction files and flags high-risk payments
-- Provides real-time individual transaction risk scoring (Single Check)
-- Maintains an audit history of all past analysis runs
-- Sends in-app notifications for high-risk (≥70% fraud probability) transactions
-- Displays 55 seeded real-dataset transactions across 2 authentic batches for demonstration
+- Analyzes batch CSV transaction statements and intercepts high-risk payments
+- Provides real-time individual transaction risk scoring and 13-point parameter investigation (Quick Check)
+- Visualizes multi-tier transaction flow through a 3D network topology (Origin -> Instrument -> Gateway -> Geo -> Triage)
+- Maintains an immutable audit history of all past analysis runs
+- Sends in-app notifications and security alerts for high-risk (≥70% fraud probability) transactions
+- Compares Classical XGBoost (0.9849 ROC-AUC, 0.8380 PR-AUC) vs Quantum VQC & QSVC models
 
 All state is stored in the browser's **localStorage** — no backend is required for demo mode.
 

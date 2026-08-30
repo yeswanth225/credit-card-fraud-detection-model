@@ -136,7 +136,7 @@ def compute_kernel_matrix_timed(
     timing  : dict with 'train_seconds' and 'test_seconds'
     """
     logger.info(
-        "Computing training kernel matrix %d × %d …",
+        "Computing training kernel matrix %d × %d ...",
         len(X_train), len(X_train),
     )
     t0 = time.perf_counter()
@@ -149,7 +149,7 @@ def compute_kernel_matrix_timed(
 
     if X_test is not None:
         logger.info(
-            "Computing test kernel matrix %d × %d …",
+            "Computing test kernel matrix %d × %d ...",
             len(X_test), len(X_train),
         )
         t0 = time.perf_counter()

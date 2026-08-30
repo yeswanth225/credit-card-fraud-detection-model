@@ -94,7 +94,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--n-qubits",     type=int,   default=4,    help="Number of qubits / features")
     p.add_argument("--zz-reps",      type=int,   default=1,    help="ZZFeatureMap reps (1=shallow, faster)")
     p.add_argument("--train-size",   type=int,   default=100,  help="Training samples (balanced 50/50)")
-    p.add_argument("--test-size",    type=int,   default=100,  help="Test samples")
+    p.add_argument("--test-size",    type=int,   default=25,   help="Test samples (default: 25, consistent with primary benchmark)")
     p.add_argument("--balanced-test",action="store_true",      help="Balance test set (default: True for local scale)")
     p.add_argument("--seed",         type=int,   default=42,   help="Random seed")
     p.add_argument("--svm-c",        type=float, default=1.0,  help="SVM regularisation C")
@@ -216,12 +216,21 @@ def main() -> None:
         rng=rng,
     )
 
-    # Always use balanced test for local scale experiments
-    X_test_sub, y_test_sub = _balanced_test_subset(
-        X_test_full, y_test_full,
-        total_size=args.test_size,
-        rng=rng,
-    )
+    # Always use stratified test (preserve real imbalance) to match benchmark
+    # The balanced-test option is only used when explicitly requested (--balanced-test)
+    if args.balanced_test:
+        X_test_sub, y_test_sub = _balanced_test_subset(
+            X_test_full, y_test_full,
+            total_size=args.test_size,
+            rng=rng,
+        )
+    else:
+        from phase2.quantum.data_preparation import _subsample_test
+        X_test_sub, y_test_sub = _subsample_test(
+            X_test_full, y_test_full,
+            total_size=args.test_size,
+            rng=rng,
+        )
 
     # ── 3. Scale features to [-pi, pi] ───────────────────────────────────
     from sklearn.preprocessing import MinMaxScaler
@@ -306,7 +315,8 @@ def main() -> None:
     print("-" * 70)
 
     # ── 9. Save results ───────────────────────────────────────────────────
-    results_path = config.results_dir / "quantum_kernel_results.json"
+    # Write to a separate file to avoid collision with QSVCExperiment.save_results()
+    results_path = config.results_dir / "qsvc_standalone_results.json"
     results_path.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "experiment": "QSVC (Quantum Kernel SVM)",

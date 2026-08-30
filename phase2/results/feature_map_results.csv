@@ -1,0 +1,3 @@
+feature_map,n_qubits,error
+angle_encoding,4,print_metrics() got an unexpected keyword argument 'verbose'
+zz_feature_map,4,print_metrics() got an unexpected keyword argument 'verbose'

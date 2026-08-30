@@ -10,5 +10,20 @@
   },
   "devDependencies": {
     "vite": "^5.4.2"
+  },
+  "dependencies": {
+    "@astryxdesign/core": "^0.5.1",
+    "@astryxdesign/theme-neutral": "^0.5.1",
+    "@stylexjs/stylex": "^0.19.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "@astryxdesign/core@0.5.1": true
+  },
+  "astryx": {
+    "theme": "@astryxdesign/theme-neutral"
   }
 }

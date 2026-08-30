@@ -76,7 +76,7 @@ def load_quantum_dataset(config: QuantumConfig = DEFAULT_CONFIG) -> Tuple[
     Parameters
     ----------
     config : QuantumConfig
-        Experiment configuration (n_qubits, subset sizes, seed, …).
+        Experiment configuration (n_qubits, subset sizes, seed, ...).
 
     Returns
     -------
@@ -94,7 +94,7 @@ def load_quantum_dataset(config: QuantumConfig = DEFAULT_CONFIG) -> Tuple[
     # ------------------------------------------------------------------
     # 1. Load Phase 1 artifacts
     # ------------------------------------------------------------------
-    logger.info("Loading Phase 1 quantum-ready dataset …")
+    logger.info("Loading Phase 1 quantum-ready dataset ...")
 
     X_train_full = np.load(config.quantum_train_path)
     X_test_full  = np.load(config.quantum_test_path)
@@ -183,7 +183,7 @@ def print_dataset_summary(
     print(f"  Training samples  : {len(y_train)} (fraud={y_train.sum()}, legit={len(y_train)-y_train.sum()})")
     print(f"  Test samples      : {len(y_test)}  (fraud={y_test.sum()}, legit={len(y_test)-y_test.sum()})")
     print(f"  Feature range     : [{X_train.min():.3f}, {X_train.max():.3f}] (angle-encoded)")
-    print(f"  Encoding target   : [-π, π] = [{-np.pi:.3f}, {np.pi:.3f}]")
+    print(f"  Encoding target   : [-pi, pi] = [{-np.pi:.3f}, {np.pi:.3f}]")
     print("=" * 60)
 
 

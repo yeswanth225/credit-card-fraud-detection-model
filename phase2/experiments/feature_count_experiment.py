@@ -103,11 +103,12 @@ def run_feature_count_experiment() -> None:
 """)
 
     # Configurations to test
+    # All use consistent 100/25 split matching the primary benchmark
     configs = [
         QuantumConfig(n_qubits=2, feature_indices=[0, 1], random_seed=42),
         QuantumConfig(n_qubits=4, feature_indices=[0, 1, 2, 3], random_seed=42),
         QuantumConfig(n_qubits=6, feature_indices=[0, 1, 2, 3, 4, 5], random_seed=42),
-        QuantumConfig(n_qubits=8, feature_indices=[0, 1, 2, 3, 4, 5, 6, 7], train_subset_size=400, test_subset_size=100, random_seed=42),
+        QuantumConfig(n_qubits=8, feature_indices=[0, 1, 2, 3, 4, 5, 6, 7], random_seed=42),
     ]
 
     results: List[Dict] = []

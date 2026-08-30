@@ -197,10 +197,12 @@ def run_feature_map_experiment() -> None:
     We will report the results honestly, regardless of which is better.
 """)
 
-    # Load data
+    # Load data - use consistent 100/25 split matching primary benchmark
     config = QuantumConfig(
         n_qubits=4,
         feature_indices=[0, 1, 2, 3],
+        train_subset_size=100,
+        test_subset_size=25,
         random_seed=42,
     )
 
@@ -233,7 +235,7 @@ def run_feature_map_experiment() -> None:
             )
 
             print(f"\n  Metrics for {fm_name}:")
-            print_metrics(metrics, verbose=True)
+            print_metrics(metrics, model_name=fm_name)
 
             # Add feature map name to results
             row = {

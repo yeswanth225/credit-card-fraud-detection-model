@@ -89,7 +89,7 @@ class QSVCExperiment:
         -------
         self (for chaining)
         """
-        logger.info("Building ZZFeatureMap (n_qubits=%d, reps=%d) …",
+        logger.info("Building ZZFeatureMap (n_qubits=%d, reps=%d) ...",
                     self.config.n_qubits, self.config.zz_reps)
 
         self.feature_map = build_zz_feature_map(
@@ -134,7 +134,7 @@ class QSVCExperiment:
         if self.kernel is None:
             self.build()
 
-        logger.info("Training QSVC on %d samples …", len(y_train))
+        logger.info("Training QSVC on %d samples ...", len(y_train))
 
         self.model = QSVC(
             quantum_kernel=self.kernel,
@@ -176,7 +176,7 @@ class QSVCExperiment:
         if self.model is None:
             raise RuntimeError("Call fit() before evaluate().")
 
-        logger.info("Evaluating QSVC on %d samples …", len(y_test))
+        logger.info("Evaluating QSVC on %d samples ...", len(y_test))
 
         t0 = time.perf_counter()
         y_pred = self.model.predict(X_test)

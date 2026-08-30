@@ -226,7 +226,7 @@ def run_qsvc_on_simulator(
     metrics["total_time_seconds"] = train_kernel_seconds + test_kernel_seconds + train_seconds
 
     print(f"\n  Results ({label}):")
-    print_metrics(metrics, verbose=True)
+    print_metrics(metrics, model_name=label)
 
     return metrics
 
@@ -263,10 +263,12 @@ def run_noise_experiment() -> None:
     If noisy is acceptable: promising for near-term deployment
 """)
 
-    # Load data
+    # Load data - use consistent 100/25 split matching primary benchmark
     config = QuantumConfig(
         n_qubits=4,
         feature_indices=[0, 1, 2, 3],
+        train_subset_size=100,
+        test_subset_size=25,
         random_seed=42,
     )
 

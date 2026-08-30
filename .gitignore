@@ -1,64 +1,69 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
+# Dependencies and virtual environments
+node_modules/
+**/node_modules/
 venv/
-ENV/
+.venv/
 env/
+ENV/
 
-# IDE
+# Python bytecode and caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Frontend build output
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.vite/
+dist/
+build/
+.next/
+.vite/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+temp/
+.cache/
+
+# Generated data and local duplicates
+data/raw/
+data/processed/
+notebooks/*.ipynb
+notebooks/.ipynb_checkpoints/
+notebooks/data/
+phase1/notebooks/
+
+# OS and editor metadata
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Database
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
-# Project specific
-.env
-.env.local
-data/raw/*.csv
-data/processed/*.pkl
-data/processed/*.parquet
+# Machine learning generated folders
 mlruns/
 runs/
-
-# Logs
-logs/
-*.log
-
-# Jupyter
-.ipynb_checkpoints
-*.ipynb
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/node_modules/

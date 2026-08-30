@@ -1,82 +1,106 @@
-/* [cred] — Design Tokens */
+/* [cred ai] — Design Tokens & Astryx-Aligned System Tokens */
 :root {
-  /* --- Color Palette --- */
-  --c-bg:           #FFFFFF;
-  --c-surface:      #F8F8F8;
-  --c-surface-2:    #F0F0F0;
-  --c-surface-3:    #E8E8E8;
-  --c-border:       #EBEBEB;
-  --c-border-strong:#D8D8D8;
+  /* --- Color Palette (Light Theme) --- */
+  --c-bg:             #FAFAFC;
+  --c-surface:        #FFFFFF;
+  --c-surface-2:      #F1F3F7;
+  --c-surface-3:      #E4E8EE;
+  --c-surface-hover:  #ECEFF5;
+  --c-border:         #E2E6EC;
+  --c-border-strong:  #CBD2DC;
+  --c-border-subtle:  #EDF0F5;
 
-  --c-text-1:       #0A0A0A;
-  --c-text-2:       #4A4A4A;
-  --c-text-3:       #6B6B6B;
-  --c-text-inv:     #FFFFFF;
+  --c-text-1:         #090D14;
+  --c-text-2:         #3E4A5B;
+  --c-text-3:         #68768A;
+  --c-text-inv:       #FFFFFF;
 
-  --c-accent:       #0A0A0A;
-  --c-accent-hover: #2A2A2A;
-  --c-accent-light: #F0F0F0;
+  --c-accent:         #090D14;
+  --c-accent-hover:   #1E2530;
+  --c-accent-light:   #F1F3F7;
 
-  /* Risk */
-  --c-high:         #B91C1C;
-  --c-high-bg:      #FEF2F2;
-  --c-high-border:  #FECACA;
-  --c-medium:       #B45309;
-  --c-medium-bg:    #FFFBEB;
-  --c-medium-border:#FDE68A;
-  --c-low:          #166534;
-  --c-low-bg:       #F0FDF4;
-  --c-low-border:   #BBF7D0;
+  --c-btn-bg:         #090D14;
+  --c-btn-text:       #FFFFFF;
+  --c-btn-hover:      #1F2937;
+  --c-btn-active:     #000000;
+
+  --c-overlay:        rgba(9, 13, 20, 0.45);
+
+  /* Semantic Risk Colors */
+  --c-high:           #DC2626;
+  --c-high-bg:        #FEF2F2;
+  --c-high-border:    #FECACA;
+  --c-medium:         #D97706;
+  --c-medium-bg:      #FFFBEB;
+  --c-medium-border:  #FDE68A;
+  --c-low:            #059669;
+  --c-low-bg:         #ECFDF5;
+  --c-low-border:     #A7F3D0;
+  --c-info:           #2563EB;
+  --c-info-bg:        #EFF6FF;
+  --c-info-border:    #BFDBFE;
 
   /* Models */
-  --c-classical:    #0A0A0A;
-  --c-quantum:      #4B4B8F;
-  --c-quantum-bg:   #F0F0FA;
+  --c-classical:        #090D14;
+  --c-classical-bg:     #F1F3F7;
+  --c-classical-border: #E2E6EC;
+  --c-classical-text:   #090D14;
+  --c-quantum:          #4F46E5;
+  --c-quantum-bg:       #EEF2FF;
+  --c-quantum-border:   #C7D2FE;
+  --c-quantum-text:     #3730A3;
 
   /* Interactive */
-  --c-focus:        rgba(10,10,10,0.3);
-  --c-disabled:     #D0D0D0;
-  --c-disabled-text:#A0A0A0;
+  --c-focus:          rgba(9, 13, 20, 0.25);
+  --c-disabled:       #D8DFE9;
+  --c-disabled-text:  #94A3B8;
 
   /* --- Spacing (4-pt grid) --- */
-  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
-  --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
-  --sp-12: 48px; --sp-16: 64px; --sp-20: 80px; --sp-24: 96px;
+  --sp-0-5: 2px;
+  --sp-1: 4px;   --sp-1-5: 6px; --sp-2: 8px;   --sp-2-5: 10px;
+  --sp-3: 12px;  --sp-3-5: 14px; --sp-4: 16px; --sp-5: 20px;
+  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px; --sp-12: 48px;
+  --sp-16: 64px; --sp-20: 80px; --sp-24: 96px;
 
   /* --- Typography --- */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
   --text-2xs: 10px;  --text-xs: 11px;  --text-sm: 13px;
-  --text-base: 15px; --text-md: 16px;  --text-lg: 18px;
+  --text-base: 14px; --text-md: 15px;  --text-lg: 18px;
   --text-xl: 20px;   --text-2xl: 24px; --text-3xl: 30px;
   --text-4xl: 36px;  --text-5xl: 48px;
 
-  --fw-normal: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+  --fw-normal: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700; --fw-extrabold: 800;
 
-  --lh-tight: 1.2; --lh-snug: 1.35; --lh-normal: 1.55; --lh-relaxed: 1.7;
+  --lh-tight: 1.2; --lh-snug: 1.35; --lh-normal: 1.5; --lh-relaxed: 1.65;
 
-  /* --- Radii --- */
-  --r-sm:  4px;  --r-md: 8px;  --r-lg: 12px;
-  --r-xl: 16px;  --r-2xl: 24px; --r-full: 9999px;
+  /* --- Radii (Refined Subtle Enterprise Radii) --- */
+  --r-xs:  3px;
+  --r-sm:  5px;
+  --r-md:  8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-2xl: 20px;
+  --r-full: 9999px;
 
   /* --- Shadows --- */
-  --sh-xs: 0 1px 2px rgba(0,0,0,0.05);
-  --sh-sm: 0 1px 4px rgba(0,0,0,0.07);
-  --sh-md: 0 2px 8px rgba(0,0,0,0.09);
-  --sh-lg: 0 4px 20px rgba(0,0,0,0.10);
-  --sh-xl: 0 8px 40px rgba(0,0,0,0.12);
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sh-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --sh-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --sh-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
 
   /* --- Transitions --- */
-  --t-fast: 100ms ease;
-  --t-base: 160ms ease;
-  --t-slow: 260ms ease;
-  --t-spring: 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring: 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* --- Layout --- */
   --sidebar-w:    240px;
-  --header-h:     60px;
-  --content-max:  1200px;
+  --header-h:     56px;
+  --content-max:  1280px;
 
   /* --- Z-index --- */
   --z-sidebar:  100;
@@ -84,4 +108,71 @@
   --z-overlay:  300;
   --z-modal:    400;
   --z-toast:    500;
+}
+
+/* ================================================================
+   Dark Theme (Default Primary Enterprise Financial Terminal)
+================================================================ */
+[data-theme="dark"] {
+  /* --- Obsidian / Deep Neutral Terminal Surfaces --- */
+  --c-bg:             #080A0E;
+  --c-surface:        #0E1219;
+  --c-surface-2:      #161C26;
+  --c-surface-3:      #1E2634;
+  --c-surface-hover:  #1A222F;
+  --c-border:         #1E2634;
+  --c-border-strong:  #2D3748;
+  --c-border-subtle:  #141923;
+
+  --c-text-1:         #F8FAFC;
+  --c-text-2:         #94A3B8;
+  --c-text-3:         #64748B;
+  --c-text-inv:       #080A0E;
+
+  --c-accent:         #F8FAFC;
+  --c-accent-hover:   #E2E8F0;
+  --c-accent-light:   #161C26;
+
+  --c-btn-bg:         #F8FAFC;
+  --c-btn-text:       #080A0E;
+  --c-btn-hover:      #E2E8F0;
+  --c-btn-active:     #CBD5E1;
+
+  --c-overlay:        rgba(4, 6, 9, 0.82);
+
+  /* Semantic Risk Colors (Dark Mode Calibrated) */
+  --c-high:           #F87171;
+  --c-high-bg:        rgba(239, 68, 68, 0.12);
+  --c-high-border:    rgba(239, 68, 68, 0.28);
+  --c-medium:         #FBBF24;
+  --c-medium-bg:      rgba(245, 158, 11, 0.12);
+  --c-medium-border:  rgba(245, 158, 11, 0.28);
+  --c-low:            #34D399;
+  --c-low-bg:         rgba(16, 185, 129, 0.12);
+  --c-low-border:     rgba(16, 185, 129, 0.28);
+  --c-info:           #60A5FA;
+  --c-info-bg:        rgba(59, 130, 246, 0.12);
+  --c-info-border:    rgba(59, 130, 246, 0.28);
+
+  /* Models */
+  --c-classical:        #F8FAFC;
+  --c-classical-bg:     #161C26;
+  --c-classical-border: #1E2634;
+  --c-classical-text:   #F8FAFC;
+  --c-quantum:          #A5B4FC;
+  --c-quantum-bg:       rgba(99, 102, 241, 0.16);
+  --c-quantum-border:   rgba(99, 102, 241, 0.36);
+  --c-quantum-text:     #C7D2FE;
+
+  /* Interactive */
+  --c-focus:          rgba(248, 250, 252, 0.25);
+  --c-disabled:       #1E2634;
+  --c-disabled-text:  #475569;
+
+  /* Shadows (Dark Mode Elevated Depth) */
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-md: 0 4px 8px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --sh-lg: 0 12px 20px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  --sh-xl: 0 24px 32px -5px rgba(0, 0, 0, 0.8), 0 10px 12px -5px rgba(0, 0, 0, 0.6);
 }

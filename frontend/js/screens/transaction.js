@@ -1,5 +1,6 @@
 /**
- * transaction.js — Transaction detail view with Classical vs Quantum comparison for [cred]
+ * transaction.js — Forensic Transaction Investigation Dossier for cred ai
+ * Features side-by-side Classical vs Quantum model comparisons and full SHAP factor attribution.
  */
 
 import { Batches, AppMeta } from '../store.js';
@@ -19,15 +20,15 @@ export function renderTransaction(txId, ctx) {
   if (!found) {
     APP().innerHTML = `
       <div class="app-shell">
-        ${sidebarHTML(user, 'dashboard')}
+        ${sidebarHTML(user, 'transactions')}
         <div class="main-content">
-          ${headerHTML(null, `<a href="#/dashboard">Dashboard</a><span class="breadcrumb-sep">${icon('chevronRight', { size: 12 })}</span>Transaction`, user)}
+          ${headerHTML(null, `<a href="#/transactions">Transactions</a><span class="breadcrumb-sep">${icon('chevronRight', { size: 11 })}</span>Investigation`, user)}
           <main class="page-body">
             <div class="empty-state">
               <div class="empty-state-icon">${icon('search', { size: 36 })}</div>
-              <div class="empty-state-title">Transaction not found</div>
-              <div class="empty-state-desc">This transaction may have been deleted or doesn't belong to your account.</div>
-              <button class="btn btn-primary" style="margin-top:16px" onclick="navigate('/dashboard')">Back to Dashboard</button>
+              <div class="empty-state-title">Transaction record not found</div>
+              <div class="empty-state-desc">The requested transaction record may have been deleted or does not exist in your account ledger.</div>
+              <button class="btn btn-primary btn-sm" style="margin-top:16px" onclick="navigate('/transactions')">Back to Ledger</button>
             </div>
           </main>
         </div>
@@ -41,74 +42,74 @@ export function renderTransaction(txId, ctx) {
   _activeModel = 'classical';
 
   const batchPath = batch ? `/history/${batch.id}` : '/history';
-  const batchName = batch?.fileName || (batch?.type === 'single' ? 'Single Check' : 'Batch');
+  const batchName = batch?.fileName || (batch?.type === 'single' ? 'Quick Single Check' : 'Batch');
+  const modelUpdated = new Date(AppMeta.getModelLastUpdated())
+    .toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
 
   APP().innerHTML = `
     <div class="app-shell">
-      ${sidebarHTML(user, 'dashboard')}
+      ${sidebarHTML(user, 'transactions')}
       <div class="main-content">
         ${headerHTML(null, `
-          <a href="#/dashboard">Dashboard</a>
-          <span class="breadcrumb-sep">${icon('chevronRight', { size: 12 })}</span>
+          <a href="#/transactions">Transactions</a>
+          <span class="breadcrumb-sep">${icon('chevronRight', { size: 11 })}</span>
           <a href="#${batchPath}">${esc(batchName)}</a>
-          <span class="breadcrumb-sep">${icon('chevronRight', { size: 12 })}</span>
-          <span style="color:var(--c-text-1)">${esc(tx.merchant || 'Transaction')}</span>
+          <span class="breadcrumb-sep">${icon('chevronRight', { size: 11 })}</span>
+          <span style="color:var(--c-text-1)">${esc(tx.merchant || 'Investigation Dossier')}</span>
         `, user)}
         <main class="page-body animate-fade-in">
 
-          <!-- Model tabs -->
-          <div class="tab-list" role="tablist" aria-label="Model results">
-            <button class="tab-btn active" id="tab-classical" role="tab" aria-selected="true" data-model="classical">
-              ${icon('shield', { size: 15 })} Classical (XGBoost)
-            </button>
-            <button class="tab-btn" id="tab-quantum" role="tab" aria-selected="false" data-model="quantum">
-              ${icon('zap', { size: 15 })} Quantum (VQC/QSVM)
-            </button>
-            <button class="tab-btn" id="tab-compare" role="tab" aria-selected="false" data-model="compare">
-              ${icon('scale', { size: 15 })} Compare Models
-            </button>
+          <div class="section-header" style="margin-bottom:var(--sp-4)">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.05em">
+                Forensic Investigation Dossier
+              </div>
+              <h2 class="section-title">${esc(tx.merchant || 'Transaction Entity')}</h2>
+            </div>
+            <div class="section-actions">
+              <div class="model-toggle" role="group" aria-label="Model evaluation">
+                <button class="model-toggle-btn active" id="tab-classical" data-model="classical">Classical XGBoost</button>
+                <button class="model-toggle-btn quantum" id="tab-quantum" data-model="quantum">Quantum VQC</button>
+                <button class="model-toggle-btn" id="tab-compare" data-model="compare">Side-by-Side Comparison</button>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="tx-export-btn">
+                ${icon('download', { size: 12 })} Export Dossier
+              </button>
+            </div>
           </div>
 
           <div class="tx-detail-grid">
 
-            <!-- Left: Transaction metadata -->
-            <aside>
-              <div class="tx-meta-card">
-                <div class="tx-meta-header">
-                  <div class="tx-merchant">${esc(tx.merchant || 'Unknown Merchant')}</div>
-                  <div class="tx-amount">₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div class="tx-meta-body">
-                  ${metaRow('Date',         tx.date || '—')}
-                  ${metaRow('Country',      tx.country || 'IN')}
-                  ${metaRow('Payment Type', tx.card_type || 'Visa')}
-                  ${metaRow('Category / MCC', tx.mcc ? `${tx.mcc}` : '—')}
-                  ${metaRow('Hour of Day',  tx.hour !== undefined ? `${tx.hour}:00` : '—')}
-                  ${metaRow('Distance from Home', tx.distance_from_home !== undefined ? `${tx.distance_from_home} km` : '—')}
-                  ${tx.distance_from_last_tx ? metaRow('Distance from Last Tx', `${tx.distance_from_last_tx} km`) : ''}
-                  ${tx.retry_attempts ? metaRow('Failed Retries', `${tx.retry_attempts}`) : ''}
-                  ${metaRow('Transaction ID', `<span class="mono" style="font-size:11px">${esc(tx.id)}</span>`, true)}
+            <!-- Left: Entity Metadata -->
+            <div class="tx-meta-panel">
+              <div style="margin-bottom:var(--sp-4)">
+                <div style="font-size:11px;color:var(--c-text-3);font-family:var(--font-mono)">Settlement Amount</div>
+                <div style="font-size:24px;font-weight:800;color:var(--c-text-1);font-family:var(--font-mono)">
+                  ₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </div>
               </div>
 
-              <!-- Adaptive learning indicator -->
-              <div class="adaptive-indicator" style="margin-top:12px" title="Last time model weights were calibrated">
-                <span class="adaptive-dot"></span>
-                Model active (${formatDate(AppMeta.getModelLastUpdated())})
+              <div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Date / Time</span><span class="tx-meta-val mono">${esc(tx.date || '—')}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Merchant Entity</span><span class="tx-meta-val">${esc(tx.merchant || '—')}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">MCC Code</span><span class="tx-meta-val mono">${tx.mcc || '5411'}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Payment Card</span><span class="tx-meta-val">${esc(tx.card_type || 'Visa')}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Country / Gateway</span><span class="tx-meta-val">${esc(tx.country || 'IN')}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Distance Home</span><span class="tx-meta-val mono">${tx.distance_from_home !== undefined ? `${tx.distance_from_home} km` : '—'}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Distance Last Tx</span><span class="tx-meta-val mono">${tx.distance_from_last_tx !== undefined ? `${tx.distance_from_last_tx} km` : '—'}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Failed 2FA Retries</span><span class="tx-meta-val mono">${tx.retry_attempts || 0}</span></div>
+                <div class="tx-meta-row"><span class="tx-meta-key">Transaction UID</span><span class="tx-meta-val mono" style="font-size:10px">${esc(tx.id)}</span></div>
               </div>
 
-              <!-- Export button -->
-              <div style="margin-top:12px">
-                <button class="btn btn-secondary" style="width:100%" id="export-tx-btn">
-                  ${icon('download', { size: 14 })} Export Record
-                </button>
+              <div style="margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--c-border);font-size:11px;color:var(--c-text-3);display:flex;align-items:center;gap:6px">
+                <span style="width:6px;height:6px;border-radius:50%;background:var(--c-low)"></span>
+                Weights calibrated: ${modelUpdated}
               </div>
-            </aside>
-
-            <!-- Right: Analysis panel -->
-            <div class="tx-analysis-panel" id="analysis-panel">
-              ${renderAnalysisPanel(tx, _activeModel)}
             </div>
+
+            <!-- Right: Dynamic Analysis Panel -->
+            <div id="tx-analysis-panel"></div>
+
           </div>
 
         </main>
@@ -118,226 +119,132 @@ export function renderTransaction(txId, ctx) {
   mountSidebarToggle();
   mountLogout(ctx);
   mountTabs(tx, ctx);
-  animateFeatureBars();
-
-  document.getElementById('export-tx-btn')?.addEventListener('click', () => {
-    doExportSingle(tx, user);
-  });
-}
-
-function renderAnalysisPanel(tx, modelOrCompare) {
-  if (modelOrCompare === 'compare') {
-    return renderCompare(tx);
-  }
-  const r = tx[modelOrCompare] || tx.classical;
-  if (!r) return '<div class="empty-state"><div class="empty-state-title">No results available</div></div>';
-  const level = getRiskLevel(r.score);
-  const pct   = Math.round(r.score * 100);
-
-  return `
-    <!-- Score -->
-    <div class="score-display">
-      ${scoreGaugeHTML(pct, level)}
-      <div class="score-info-col">
-        <div class="score-number" style="color:${levelColor(level)}">${pct}%</div>
-        <div class="score-verdict">
-          ${r.flag ? `${icon('alertTriangle', { size: 16 })} Flagged as High Risk Fraud` : `${icon('check', { size: 16 })} Normal / Cleared`}
-        </div>
-        <div class="score-model-tag">
-          <span class="badge ${modelOrCompare === 'quantum' ? 'badge-quantum' : 'badge-classical'}">
-            ${modelOrCompare === 'quantum' ? 'Quantum VQC' : 'Classical XGBoost'}
-          </span>
-          fraud probability estimation
-        </div>
-      </div>
-    </div>
-
-    <!-- Explanation -->
-    <div class="card" style="padding:0">
-      <div style="padding:16px 20px;border-bottom:1px solid var(--c-border)">
-        <div class="card-title" style="font-size:14px">Decision Rationale</div>
-      </div>
-      <div style="padding:16px 20px">
-        <p class="explanation-text ${level}">${r.explanation}</p>
-      </div>
-    </div>
-
-    <!-- Feature breakdown -->
-    <div class="card" style="padding:0">
-      <div style="padding:16px 20px;border-bottom:1px solid var(--c-border)">
-        <div class="card-title" style="font-size:14px">Top Contributing Risk Features</div>
-        <div class="card-subtitle">
-          ↑ Increases fraud likelihood &nbsp;·&nbsp; ↓ Decreases fraud likelihood
-        </div>
-      </div>
-      <div style="padding:16px 20px">
-        <div class="feature-list" id="feature-list-${modelOrCompare}">
-          ${r.features.map((f, i) => `
-            <div class="feature-item">
-              <div class="feature-name">${esc(f.label)}</div>
-              <div class="feature-bar-wrap">
-                <div class="feature-bar ${f.direction}"
-                  style="width:0%"
-                  data-target="${Math.round(f.magnitude * 100)}%"
-                  id="fb-${modelOrCompare}-${i}"></div>
-              </div>
-              <div class="feature-dir ${f.direction}">
-                ${f.direction === 'up' ? `${icon('arrowUp', { size: 11 })} Risk` : `${icon('arrowDown', { size: 11 })} Safe`}
-              </div>
-            </div>
-            <div style="font-size:12px;color:var(--c-text-3);margin-top:-6px;margin-bottom:6px;line-height:1.4">
-              ${esc(f.explanation)}
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderCompare(tx) {
-  const c = tx.classical;
-  const q = tx.quantum;
-  if (!c || !q) return '<div class="empty-state"><div class="empty-state-title">Comparison unavailable</div></div>';
-
-  const cLevel = getRiskLevel(c.score);
-  const qLevel = getRiskLevel(q.score);
-  const cPct   = Math.round(c.score * 100);
-  const qPct   = Math.round(q.score * 100);
-  const diff   = Math.abs(cPct - qPct);
-  const agree  = c.flag === q.flag;
-
-  return `
-    <div class="alert alert-info" style="margin-bottom:0">
-      <span class="alert-icon">${icon('info', { size: 16 })}</span>
-      <span>Both engines scored this transaction.
-        ${agree ? 'They <strong>agree</strong> on the risk verdict.' : `They <strong>diverge</strong> — the models captured different correlation patterns.`}
-        Difference: <strong>${diff} percentage points</strong>.
-      </span>
-    </div>
-
-    <div class="compare-grid">
-      <!-- Classical -->
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span class="badge badge-classical">Classical</span>
-          <span class="compare-model-label">XGBoost Decision Trees</span>
-        </div>
-        <div style="margin-bottom:16px">
-          ${scoreGaugeHTML(cPct, cLevel)}
-        </div>
-        <div style="font-size:22px;font-weight:700;color:${levelColor(cLevel)};margin-bottom:4px">${cPct}%</div>
-        <div style="font-size:13px;margin-bottom:12px">${c.flag ? `<span class="badge badge-high">${icon('alertTriangle', { size: 11 })} Flagged</span>` : `<span class="badge badge-low">${icon('check', { size: 11 })} Safe</span>`}</div>
-        <p class="explanation-text ${cLevel}" style="font-size:13px">${c.explanation}</p>
-      </div>
-
-      <!-- Quantum -->
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span class="badge badge-quantum">Quantum</span>
-          <span class="compare-model-label">VQC / QSVM Hilbert Kernel</span>
-        </div>
-        <div style="margin-bottom:16px">
-          ${scoreGaugeHTML(qPct, qLevel)}
-        </div>
-        <div style="font-size:22px;font-weight:700;color:${levelColor(qLevel)};margin-bottom:4px">${qPct}%</div>
-        <div style="font-size:13px;margin-bottom:12px">${q.flag ? `<span class="badge badge-high">${icon('alertTriangle', { size: 11 })} Flagged</span>` : `<span class="badge badge-low">${icon('check', { size: 11 })} Safe</span>`}</div>
-        <p class="explanation-text ${qLevel}" style="font-size:13px">${q.explanation}</p>
-      </div>
-    </div>`;
+  renderModelPanel(tx, _activeModel);
 }
 
 function mountTabs(tx, ctx) {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.toggle('active', b === btn);
-        b.setAttribute('aria-selected', String(b === btn));
-      });
-      const model = btn.dataset.model;
-      _activeModel = model;
-      const panel = document.getElementById('analysis-panel');
-      if (panel) {
-        panel.innerHTML = renderAnalysisPanel(tx, model);
-        animateFeatureBars();
-      }
+  ['classical', 'quantum', 'compare'].forEach(m => {
+    document.getElementById(`tab-${m}`)?.addEventListener('click', e => {
+      _activeModel = m;
+      document.querySelectorAll('.model-toggle-btn').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      renderModelPanel(tx, _activeModel);
     });
+  });
+
+  document.getElementById('tx-export-btn')?.addEventListener('click', () => {
+    exportToPDF([tx], `cred_ai_investigation_${tx.id}`, {
+      userName: ctx.user?.name,
+      batchName: 'Transaction Dossier',
+      modelType: _activeModel === 'compare' ? 'classical' : _activeModel,
+      exportedAt: new Date().toISOString(),
+    });
+    window.showToast('PDF dossier downloaded.', 'success');
   });
 }
 
-function animateFeatureBars() {
-  requestAnimationFrame(() => {
-    document.querySelectorAll('.feature-bar[data-target]').forEach(bar => {
-      setTimeout(() => { bar.style.width = bar.dataset.target; }, 50);
-    });
-  });
-}
+function renderModelPanel(tx, model) {
+  const panel = document.getElementById('tx-analysis-panel');
+  if (!panel) return;
 
-function scoreGaugeHTML(pct, level) {
-  const r = 34; const circ = 2 * Math.PI * r;
-  const offset = circ - (pct / 100) * circ;
-  const color = levelColor(level);
-  return `
-    <div class="score-gauge" aria-label="Score: ${pct}%">
-      <svg width="80" height="80" viewBox="0 0 80 80">
-        <circle class="score-gauge-bg" cx="40" cy="40" r="${r}" stroke-width="6" fill="none"/>
-        <circle class="score-gauge-fill" cx="40" cy="40" r="${r}" stroke-width="6" fill="none"
-          stroke="${color}"
-          stroke-dasharray="${circ}"
-          stroke-dashoffset="${offset}"/>
-      </svg>
-      <div class="score-gauge-text" style="color:${color}">${pct}%</div>
+  if (model === 'compare') {
+    panel.innerHTML = renderCompareHTML(tx);
+    return;
+  }
+
+  const r = tx[model] || tx.classical;
+  const pct = Math.round((r?.score ?? 0) * 100);
+  const level = getRiskLevel(r?.score ?? 0);
+  const riskColor = level === 'high' ? 'var(--c-high)' : level === 'medium' ? 'var(--c-medium)' : 'var(--c-low)';
+
+  panel.innerHTML = `
+    <div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-xl);padding:var(--sp-6)">
+      <!-- Score Ribbon -->
+      <div style="display:flex;align-items:center;gap:var(--sp-5);padding:var(--sp-4);background:var(--c-surface-2);border-radius:var(--r-lg);border:1px solid var(--c-border);margin-bottom:var(--sp-5)">
+        <div style="font-family:var(--font-mono);font-size:42px;font-weight:800;color:${riskColor};line-height:1">
+          ${pct}%
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span class="risk-indicator ${level}" style="font-weight:700">
+              <span class="risk-dot"></span>${level === 'high' ? 'High Risk Intercept' : level === 'medium' ? 'Medium Risk Alert' : 'Verified Cleared'}
+            </span>
+            <span class="badge ${model === 'quantum' ? 'badge-quantum' : 'badge-classical'}">
+              ${model === 'quantum' ? 'Quantum VQC Kernel' : 'Classical XGBoost Tree'}
+            </span>
+          </div>
+          <div style="font-size:12px;color:var(--c-text-2)">
+            ${r.flag ? 'Telemetry indicates anomalous payment signature.' : 'Telemetry is consistent with legitimate pattern.'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Plain Language Rationale -->
+      <div style="margin-bottom:var(--sp-5)">
+        <div style="font-size:11px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">
+          Explainable Decision Rationale
+        </div>
+        <p class="explanation-text ${level}" style="margin:0">
+          ${r.explanation}
+        </p>
+      </div>
+
+      <!-- Contributing Risk Signals -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">
+          Feature Importance Attribution
+        </div>
+        <div class="feature-list">
+          ${r.features.map(f => `
+            <div class="feature-item">
+              <div class="feature-name">${esc(f.label)}</div>
+              <div class="feature-bar-wrap">
+                <div class="feature-bar ${f.direction}" style="width:${Math.round(f.magnitude * 100)}%"></div>
+              </div>
+              <div class="feature-dir ${f.direction}">
+                ${f.direction === 'up' ? '↑ Risk' : '↓ Safe'}
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:-3px;margin-bottom:6px">
+              ${esc(f.explanation)}
+            </div>`).join('')}
+        </div>
+      </div>
     </div>`;
 }
 
-function levelColor(level) {
-  if (level === 'high')   return 'var(--c-high)';
-  if (level === 'medium') return 'var(--c-medium)';
-  return 'var(--c-low)';
-}
+function renderCompareHTML(tx) {
+  const c = tx.classical;
+  const q = tx.quantum;
+  const cPct = Math.round((c?.score ?? 0) * 100);
+  const qPct = Math.round((q?.score ?? 0) * 100);
 
-function metaRow(label, value, raw = false) {
   return `
-    <div class="tx-meta-row">
-      <span class="tx-meta-key">${label}</span>
-      <span class="tx-meta-val">${raw ? value : esc(String(value))}</span>
+    <div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-xl);padding:var(--sp-6)">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--sp-4)">Classical vs Quantum Side-by-Side Evaluation</h3>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-5)">
+        <div style="padding:var(--sp-4);background:var(--c-surface-2);border-radius:var(--r-lg);border:1px solid var(--c-border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span class="badge badge-classical">Classical XGBoost</span>
+            <span class="mono" style="font-size:18px;font-weight:800">${cPct}%</span>
+          </div>
+          <p style="font-size:12px;color:var(--c-text-2);margin:0">${c.explanation}</p>
+        </div>
+
+        <div style="padding:var(--sp-4);background:var(--c-surface-2);border-radius:var(--r-lg);border:1px solid var(--c-border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span class="badge badge-quantum">Quantum VQC</span>
+            <span class="mono" style="font-size:18px;font-weight:800;color:var(--c-quantum)">${qPct}%</span>
+          </div>
+          <p style="font-size:12px;color:var(--c-text-2);margin:0">${q.explanation}</p>
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--c-text-3);line-height:1.5">
+        <strong>Engine Divergence:</strong> Classical decision trees excel at threshold rules on velocity and amount. The Variational Quantum Classifier evaluates cross-variable correlations in Hilbert space, providing an orthogonal risk vector for defense-in-depth.
+      </div>
     </div>`;
 }
 
-function formatDate(iso) {
-  try { return new Date(iso).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }); }
-  catch { return iso; }
-}
-
-function doExportSingle(tx, user) {
-  window.showModal(`
-    <h2 class="modal-title">Export Transaction</h2>
-    <p class="modal-body">Export full triage audit report for ${esc(tx.merchant)}.</p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
-      <button class="btn btn-primary" id="modal-csv">${icon('download', { size: 14 })} CSV</button>
-      <button class="btn btn-primary" id="modal-pdf">${icon('download', { size: 14 })} PDF Report</button>
-    </div>`, modal => {
-    modal.querySelector('#modal-cancel').addEventListener('click', window.closeModal);
-    modal.querySelector('#modal-csv').addEventListener('click', () => {
-      try {
-        exportToCSV([tx], `cred_tx_${tx.id}`, _activeModel === 'compare' ? 'classical' : _activeModel);
-        window.closeModal();
-        window.showToast('CSV downloaded.', 'success');
-      } catch (e) { window.showToast(e.message, 'error'); }
-    });
-    modal.querySelector('#modal-pdf').addEventListener('click', () => {
-      try {
-        exportToPDF([tx], `cred_tx_${tx.id}`, {
-          userName: user?.name,
-          batchName: `Transaction Audit: ${tx.merchant || tx.id}`,
-          modelType: _activeModel === 'compare' ? 'classical' : _activeModel,
-          exportedAt: new Date().toISOString(),
-        });
-        window.closeModal();
-        window.showToast('PDF report downloaded.', 'success');
-      } catch (e) { window.showToast(e.message, 'error'); }
-    });
-  });
-}
-
-function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }

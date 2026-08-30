@@ -1,0 +1,167 @@
+{
+  "experiment": "Phase 2 Final Quantum ML Evaluation",
+  "timestamp": "2026-08-30 18:16:41",
+  "dataset": {
+    "source": "creditcard.csv (Kaggle)",
+    "n_total": 284807,
+    "fraud_rate": 0.00173,
+    "phase1_train": 227845,
+    "phase1_test": 56962
+  },
+  "quantum_config": {
+    "n_qubits": 4,
+    "features": [
+      "V14",
+      "V4",
+      "V12",
+      "V8"
+    ],
+    "feature_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "train_samples": 100,
+    "eval_samples": 200,
+    "train_balance": "Balanced (50 fraud + 50 legit)",
+    "eval_balance": "Balanced (100 fraud + 100 legit)",
+    "scaler": "MinMaxScaler to [-pi, pi], fit on train only",
+    "zz_feature_map": "reps=2",
+    "vqc_ansatz": "RealAmplitudes reps=2",
+    "random_seed": 42
+  },
+  "evaluation_methodology": {
+    "train_source": "Drawn from Phase 1 training pool (balanced)",
+    "eval_source": "Drawn from Phase 1 test pool (balanced)",
+    "eval_note": "Balanced eval set (50/50) is used so PR-AUC, Recall, F1, Precision have statistical meaning (~100 fraud cases). This does NOT represent the real-world fraud rate (~0.17%). The balanced eval measures discrimination ability, not real-world deployment performance.",
+    "xgboost_comparison_note": "XGBoost metrics are from Phase 1 on the full real-imbalance test set (56,962 samples, ~98 fraud). Quantum metrics are from the balanced 200-sample eval set. These are NOT directly comparable. See 'fair_comparison' section for honest interpretation."
+  },
+  "fair_comparison": {
+    "description": "This is NOT an apples-to-apples comparison. XGBoost: full dataset (227k train, 57k test, 30 features). QSVC/VQC: small subset (100 train, 200 eval, 4 features). The purpose is to demonstrate quantum feasibility on the SAME fraud dataset, not to claim quantum superiority.",
+    "what_is_fair": [
+      "Both models use the SAME creditcard.csv fraud dataset",
+      "Both use the SAME feature selection (top 4 by Phase 1 importance)",
+      "Both are evaluated on fraud/legit discrimination"
+    ],
+    "what_is_unfair": [
+      "XGBoost: 227k samples, 30 features; QSVC/VQC: 100 samples, 4 features",
+      "XGBoost eval: real 0.17% fraud rate; Quantum eval: 50% fraud rate",
+      "XGBoost was tuned with cross-validation; quantum models were not",
+      "XGBoost had 100x more training data"
+    ]
+  },
+  "models": [
+    {
+      "model": "XGBoost (Phase 1)",
+      "model_type": "Classical",
+      "backend": "CPU (XGBoost)",
+      "n_samples_train": 227845,
+      "n_samples_test": 56962,
+      "n_features": 30,
+      "n_qubits": "N/A",
+      "circuit_type": "N/A",
+      "preprocessing": "StandardScaler + class weighting",
+      "training_time_seconds": "Not measured",
+      "inference_time_seconds": "Not measured",
+      "metrics": {
+        "pr_auc": 0.8716329310770835,
+        "roc_auc": 0.9692409673492357,
+        "f1": 0.8723404255319149,
+        "precision": 0.9111111111111111,
+        "recall": 0.8367346938775511,
+        "accuracy": 0.9995786664794073,
+        "fpr": 0.00014068655036578504
+      },
+      "source": "Loaded from phase1_results.json"
+    },
+    {
+      "model": "QSVC",
+      "model_type": "Quantum",
+      "backend": "Qiskit Statevector (local, ideal)",
+      "n_samples_train": 100,
+      "n_samples_eval": 198,
+      "n_features": 4,
+      "n_qubits": 4,
+      "circuit_type": "ZZFeatureMap (reps=2)",
+      "preprocessing": "MinMaxScaler to [-pi, pi] (fit on train only)",
+      "training_time_seconds": 73.266,
+      "inference_time_seconds": 136.169,
+      "kernel_evaluations_train": 10000,
+      "kernel_evaluations_test": 20000,
+      "metrics": {
+        "precision": 0.7469879518072289,
+        "recall": 0.6326530612244898,
+        "f1": 0.6850828729281768,
+        "accuracy": 0.7121212121212122,
+        "roc_auc": 0.7656122448979591,
+        "pr_auc": 0.7522865310300925,
+        "false_positive_rate": 0.21,
+        "false_negative_rate": 0.3673469387755102,
+        "true_positives": 62,
+        "true_negatives": 79,
+        "false_positives": 21,
+        "false_negatives": 36,
+        "confusion_matrix": [
+          [
+            79,
+            21
+          ],
+          [
+            36,
+            62
+          ]
+        ],
+        "n_samples": 198,
+        "n_fraud": 98,
+        "n_legit": 100,
+        "threshold": 0.5
+      },
+      "source": "Phase 2 final evaluation (this run)"
+    },
+    {
+      "model": "VQC",
+      "model_type": "Quantum",
+      "backend": "Qiskit Statevector (local, ideal)",
+      "n_samples_train": 100,
+      "n_samples_eval": 198,
+      "n_features": 4,
+      "n_qubits": 4,
+      "circuit_type": "ZZFeatureMap (reps=2) + RealAmplitudes (reps=2)",
+      "optimizer": "COBYLA",
+      "max_iterations": 20,
+      "preprocessing": "MinMaxScaler to [-pi, pi] (fit on train only)",
+      "training_time_seconds": 14.841,
+      "inference_time_seconds": 3.401,
+      "metrics": {
+        "precision": 0.6160714285714286,
+        "recall": 0.7040816326530612,
+        "f1": 0.6571428571428571,
+        "accuracy": 0.6363636363636364,
+        "roc_auc": 0.6666326530612244,
+        "pr_auc": 0.6142359598583729,
+        "false_positive_rate": 0.43,
+        "false_negative_rate": 0.29591836734693877,
+        "true_positives": 69,
+        "true_negatives": 57,
+        "false_positives": 43,
+        "false_negatives": 29,
+        "confusion_matrix": [
+          [
+            57,
+            43
+          ],
+          [
+            29,
+            69
+          ]
+        ],
+        "n_samples": 198,
+        "n_fraud": 98,
+        "n_legit": 100,
+        "threshold": 0.5
+      },
+      "source": "Phase 2 final evaluation (this run)"
+    }
+  ]
+}

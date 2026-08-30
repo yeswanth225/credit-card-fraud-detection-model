@@ -1,0 +1,129 @@
+{
+  "benchmark_name": "Phase 2 -- Quantum vs Classical",
+  "timestamp": "2026-08-30 17:42:06",
+  "backend_note": "All quantum models use LOCAL Qiskit Statevector simulation. IBM Quantum hardware is NOT integrated.",
+  "data_strategy": {
+    "quantum_training_samples": 100,
+    "quantum_test_samples": 25,
+    "train_balance": "50/50 fraud/legit (artificially balanced)",
+    "test_balance": "stratified at real fraud rate (~0.17%) -- expect ~0-1 fraud cases",
+    "features": "4 top features (V14, V4, V12, V8) -- selected by Phase 1 XGBoost importance",
+    "random_seed": 42,
+    "scaler": "MinMaxScaler to [-pi, pi], fitted ONLY on training subset",
+    "reliability_warning": "With ~1 fraud case in 25 test samples, quantum precision/recall/F1 have very limited statistical reliability. Phase 3 should use larger balanced test sets."
+  },
+  "models": [
+    {
+      "model": "XGBoost (Phase 1)",
+      "model_type": "Classical",
+      "backend": "CPU (XGBoost)",
+      "n_samples_train": 227845,
+      "n_samples_test": 56962,
+      "n_features": 30,
+      "n_qubits": "N/A",
+      "preprocessing": "StandardScaler (fit on train only) + class_weight via scale_pos_weight=577.3",
+      "training_time_seconds": "Not available",
+      "inference_time_seconds": "Not available",
+      "metrics": {
+        "pr_auc": 0.8716329310770835,
+        "roc_auc": 0.9692409673492357,
+        "f1": 0.8723404255319149,
+        "precision": 0.9111111111111111,
+        "recall": 0.8367346938775511,
+        "accuracy": 0.9995786664794073,
+        "false_positive_rate": 0.00014068655036578504
+      },
+      "notes": "Full dataset (284807 transactions), all 30 features. Threshold optimised to 0.70 for max F1.",
+      "source": "Loaded from phase1_results.json (Phase 1)"
+    },
+    {
+      "model": "QSVC",
+      "model_type": "Quantum",
+      "backend": "Qiskit Statevector (local ideal simulation \u2014 no IBM Quantum)",
+      "n_samples_train": 100,
+      "n_samples_test": 25,
+      "n_features": 4,
+      "n_qubits": 4,
+      "circuit_type": "ZZFeatureMap (reps=2)",
+      "preprocessing": "MinMaxScaler to [-pi, pi] (fit on train subset only)",
+      "training_time_seconds": 23.752,
+      "inference_time_seconds": 19.922,
+      "metrics": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.6,
+        "roc_auc": 0.08333333333333337,
+        "pr_auc": 0.043478260869565216,
+        "false_positive_rate": 0.375,
+        "false_negative_rate": 1.0,
+        "true_positives": 0,
+        "true_negatives": 15,
+        "false_positives": 9,
+        "false_negatives": 1,
+        "confusion_matrix": [
+          [
+            15,
+            9
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "n_samples": 25,
+        "n_fraud": 1,
+        "n_legit": 24,
+        "threshold": 0.5
+      },
+      "notes": "4-qubit ZZFeatureMap (reps=2), balanced training (50/50 fraud/legit), stratified test. Subset: 100 train, 25 test. Train fraud=50, Test fraud=1.",
+      "reliability_note": "Test set has very few fraud cases due to real imbalance (~0.17%). Precision/Recall/F1 have limited statistical meaning at this scale.",
+      "source": "Phase 2 experiments (this run)"
+    },
+    {
+      "model": "VQC",
+      "model_type": "Quantum",
+      "backend": "Qiskit Statevector (local ideal simulation \u2014 no IBM Quantum)",
+      "n_samples_train": 100,
+      "n_samples_test": 25,
+      "n_features": 4,
+      "n_qubits": 4,
+      "circuit_type": "ZZFeatureMap (reps=2) + RealAmplitudes ansatz (reps=2)",
+      "preprocessing": "MinMaxScaler to [-pi, pi] (fit on train subset only)",
+      "training_time_seconds": 7.957,
+      "inference_time_seconds": 0.151,
+      "n_optimizer_iterations": "Not available",
+      "metrics": {
+        "precision": 0.08333333333333333,
+        "recall": 1.0,
+        "f1": 0.15384615384615385,
+        "accuracy": 0.56,
+        "roc_auc": 0.5416666666666667,
+        "pr_auc": 0.08333333333333333,
+        "false_positive_rate": 0.4583333333333333,
+        "false_negative_rate": 0.0,
+        "true_positives": 1,
+        "true_negatives": 13,
+        "false_positives": 11,
+        "false_negatives": 0,
+        "confusion_matrix": [
+          [
+            13,
+            11
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "n_samples": 25,
+        "n_fraud": 1,
+        "n_legit": 24,
+        "threshold": 0.5
+      },
+      "notes": "ZZFeatureMap (reps=2), RealAmplitudes ansatz (reps=2), COBYLA optimizer (max_iter=20). Subset: 100 train, 25 test. Train fraud=50, Test fraud=1.",
+      "reliability_note": "Test set has very few fraud cases due to real imbalance (~0.17%). Precision/Recall/F1 have limited statistical meaning at this scale.",
+      "source": "Phase 2 experiments (this run)"
+    }
+  ]
+}
