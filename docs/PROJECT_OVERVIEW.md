@@ -17,8 +17,8 @@ React + Vite Frontend (port 5173)
 FastAPI Backend (port 8000)
         │
         ▼
-Classical ML Pipeline          Quantum ML Pipeline (planned)
-  └── XGBoost model               └── VQC / QSVM (Phase 2)
+Classical ML Pipeline          Quantum ML Pipeline (Phase 2)
+  └── XGBoost model               └── VQC / QSVC
         │
         ▼
  data/processed/ (model artifacts)
@@ -75,15 +75,15 @@ A dashboard for fraud analysts.
 
 ---
 
-### 4. Quantum ML Pipeline ⏳ Not Started
+### 4. Quantum ML Pipeline ✅ Complete
 
-The upcoming Phase 2. Reserved directory: `src/quantum/`
+Phase 2 is now complete. Reserved directory: `src/quantum/` and `phase2/`
 
-Planned components:
-- **Feature reduction:** Already prepared — top 8 features extracted into `data/processed/X_train_quantum.npy` (227,845 × 8)
-- **VQC:** Variational Quantum Classifier using Qiskit
-- **QSVM:** Quantum Support Vector Machine using Qiskit
-- **Benchmark:** Compare quantum models against the Phase 1 XGBoost baseline
+Completed components:
+- **Feature reduction:** Top 4 features extracted for quantum use.
+- **VQC:** Variational Quantum Classifier using Qiskit.
+- **QSVC:** Quantum Support Vector Machine using Qiskit.
+- **Benchmark:** Compare quantum models against the Phase 1 XGBoost baseline (using a local simulator).
 
 ---
 
@@ -93,12 +93,12 @@ Planned components:
 |------|--------|-------|
 | Classical ML pipeline | ✅ Done | Full preprocessing + XGBoost + SHAP |
 | Model evaluation | ✅ Done | On real held-out test set |
-| Quantum-ready 8-feature dataset | ✅ Done | Saved as .npy arrays in data/processed/ |
+| Quantum-ready 4-feature dataset | ✅ Done | Saved as .npy arrays in data/processed/ |
 | FastAPI backend | 🟡 Partial | Core endpoints working, some in progress |
 | React dashboard | 🟡 Partial | Connected to backend, actively developed |
-| VQC implementation | ⏳ Planned | Phase 2 |
-| QSVM implementation | ⏳ Planned | Phase 2 |
-| Classical vs quantum benchmark | ⏳ Planned | Phase 2 |
+| VQC implementation | ✅ Done | Phase 2 completed |
+| QSVC implementation | ✅ Done | Phase 2 completed |
+| Classical vs quantum benchmark | ✅ Done | Phase 2 completed (using local simulator) |
 | Production deployment | ⏳ Future | After Phase 2 |
 
 ---

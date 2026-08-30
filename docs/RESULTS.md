@@ -43,75 +43,50 @@ Actual Normal [56,836    79]   False Positive Rate: 0.14%
 
 ```
 Circuit:      4-qubit ZZFeatureMap
-Backend:      PennyLane default.qubit (simulator)
-Dataset:      50 samples (25 fraud, 25 legitimate)
-Train split:  40 samples
-Test split:   10 samples
+Backend:      Qiskit Statevector (local ideal simulation)
+Dataset:      100 train (50 fraud, 50 legit), 25 test (stratified, 1 fraud)
 
 Confusion Matrix:
-  [[4  1]
-   [1  4]]
+  [[15  9]
+   [ 1  0]]
 
-Accuracy:   80.0%
-Precision:  80.0%
-Recall:     80.0%
-F1-Score:   80.0%
-AUC-ROC:   ~0.82
+Accuracy:   60.0%
+Precision:  0.0%
+Recall:     0.0%
+F1-Score:   0.0%
+AUC-ROC:    0.083
+PR-AUC:     0.043
 ```
 
-### VQC (Variational Quantum Circuit)
+### VQC (Variational Quantum Classifier)
 
 ```
-Circuit:      4-qubit RY ansatz (2 layers)
-Optimizer:    Adam (lr=0.01)
-Epochs:       50
-Backend:      PennyLane default.qubit
+Circuit:      4-qubit ZZFeatureMap + RealAmplitudes ansatz (2 reps)
+Optimizer:    COBYLA (max_iter=20)
+Backend:      Qiskit Statevector (local ideal simulation)
+Dataset:      100 train (50 fraud, 50 legit), 25 test (stratified, 1 fraud)
 
-Final Training Loss: 0.31
-Test Accuracy:      ~78%
-AUC-ROC:           ~0.78
+Confusion Matrix:
+  [[13 11]
+   [ 0  1]]
+
+Accuracy:   56.0%
+Precision:  8.3%
+Recall:     100.0%
+F1-Score:   15.4%
+AUC-ROC:    0.542
+PR-AUC:     0.083
 ```
-
-### Feature Map Comparison
-
-| Encoding | AUC-ROC | Notes |
-|:---|:---:|:---|
-| ZZFeatureMap | 0.82 | Default, best performance |
-| PauliFeatureMap | 0.79 | More expressive, slower |
-| Angle Encoding | 0.71 | Simpler, less quantum advantage |
-| Amplitude Encoding | 0.74 | Requires normalization |
-
-### Qubit Count Comparison
-
-| Qubits | Accuracy | Circuit Depth | Kernel Time |
-|:---:|:---:|:---:|:---|
-| 2 | 68% | 4 gates | ~30s |
-| 3 | 74% | 8 gates | ~90s |
-| **4** | **80%** | **14 gates** | **~3 min** |
-| 5 | 78% | 22 gates | ~8 min (barren plateau) |
-
-### Noise Sensitivity (QSVC, 4 qubits)
-
-| Noise Level | Accuracy | Notes |
-|:---|:---:|:---|
-| 0% (ideal) | 80.0% | Simulator baseline |
-| 1% depolarizing | 77.5% | Slight degradation |
-| 5% depolarizing | 71.2% | Noticeable drop |
-| 10% depolarizing | 65.0% | Significant degradation |
-
----
 
 ## Full Model Comparison
 
-| Model | Type | Dataset Size | AUC-ROC | Accuracy |
+| Model | Type | Dataset Size | AUC-ROC | PR-AUC |
 |:---|:---|:---:|:---:|:---:|
-| XGBoost | Classical | 284,807 | 0.9849 | 99.8% |
-| Random Forest | Classical | 284,807 | 0.9821 | 99.7% |
-| Logistic Regression | Classical | 284,807 | 0.9743 | 99.3% |
-| QSVC (4q, ZZ) | Quantum | 50 | ~0.82 | 80.0% |
-| VQC (4q, RY) | Quantum | 50 | ~0.78 | 78.0% |
+| XGBoost | Classical | 284,807 | 0.969 | 0.872 |
+| QSVC (4q, ZZ) | Quantum | 100 | 0.083 | 0.043 |
+| VQC (4q, ZZ+RY) | Quantum | 100 | 0.542 | 0.083 |
 
-> **Key insight**: The performance gap between classical and quantum models is primarily due to **data size**, not model quality. Classical models train on 284K samples; quantum models are limited to ~50 samples due to O(n²) kernel complexity. On equal-sized subsets, QSVC is competitive with Logistic Regression.
+> **Key insight**: The performance gap between classical and quantum models in this experiment is heavily influenced by **data size**. Classical models train on ~227K samples; quantum models are limited to 100 samples due to O(n²) kernel complexity and local simulation constraints. The test set size of 25 (with only 1 fraud case) also severely limits the statistical reliability of the precision/recall metrics.
 
 ---
 

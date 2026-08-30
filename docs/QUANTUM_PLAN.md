@@ -47,43 +47,32 @@ XGBoost trained on 284,807 real transactions. PR-AUC: 0.8557.
 This is the number all quantum models must be compared against.
 
 ### Step 2 — Feature Reduction ✅ Done
-Top 8 features selected by XGBoost importance (83.16% of cumulative importance).
-Quantum-ready arrays saved at `data/processed/X_train_quantum.npy` (227,845 × 8).
+Top 4 features selected by XGBoost importance.
+Quantum-ready arrays saved at `data/processed/X_train_quantum.npy`.
 
-### Step 3 — Quantum-Compatible Dataset ⏳ Next
-- Normalize the 8 features to the range [0, π] or [−π, π] for angle encoding
-- Decide on the number of training samples to use (full dataset is too slow for quantum simulation; start with 1,000–5,000 samples)
-- Use the same test split as Phase 1 for a fair comparison
+### Step 3 — Quantum-Compatible Dataset ✅ Done
+- Normalized the 4 features to the range [-π, π] using MinMaxScaler (fitted on train only)
+- Used 100 training samples (balanced) and 25 test samples (stratified) due to quantum simulation constraints.
 
-### Step 4 — Quantum Encoding ⏳
+### Step 4 — Quantum Encoding ✅ Done
 Encoding translates classical feature values into quantum states.
 
-**Angle Encoding (recommended starting point):**
-```
-feature_i → Ry(θ_i)|0⟩   where θ_i = 2 × arcsin(x_i)
-```
-Each of the 8 features maps to one qubit rotation. This requires an 8-qubit circuit.
+**ZZFeatureMap (used for QSVC and VQC):**
+A Qiskit built-in that encodes features with entanglement between qubits. Captures feature interactions at the quantum level. We used a 4-qubit ZZFeatureMap.
 
-**ZZFeatureMap (for QSVM):**
-A Qiskit built-in that encodes features with entanglement between qubits. Captures feature interactions at the quantum level.
-
-### Step 5 — Quantum Kernel / QSVM ⏳
+### Step 5 — Quantum Kernel / QSVC ✅ Done
 Quantum Support Vector Machine using a quantum kernel.
 
 ```python
 from qiskit.circuit.library import ZZFeatureMap
 from qiskit_machine_learning.kernels import FidelityQuantumKernel
-from qiskit_machine_learning.algorithms import QSVC
+from sklearn.svm import SVC
 
-feature_map = ZZFeatureMap(feature_dimension=8, reps=2)
-kernel = FidelityQuantumKernel(feature_map=feature_map)
-qsvm = QSVC(quantum_kernel=kernel)
-qsvm.fit(X_train_quantum_small, y_train_quantum_small)
+feature_map = ZZFeatureMap(feature_dimension=4, reps=2)
+# QSVC model trained on 100 samples
 ```
 
-Why start here: QSVM has a cleaner theoretical motivation (quantum kernel expressiveness) and no variational training loop — easier to debug.
-
-### Step 6 — VQC (Variational Quantum Classifier) ⏳
+### Step 6 — VQC (Variational Quantum Classifier) ✅ Done
 A quantum circuit with trainable parameters, optimized to classify fraud vs legitimate.
 
 ```python
@@ -91,59 +80,32 @@ from qiskit.circuit.library import RealAmplitudes
 from qiskit_machine_learning.algorithms import VQC
 from qiskit.algorithms.optimizers import COBYLA
 
-ansatz = RealAmplitudes(num_qubits=8, reps=3)
-vqc = VQC(feature_map=feature_map, ansatz=ansatz, optimizer=COBYLA())
-vqc.fit(X_train_quantum_small, y_train_quantum_small)
+ansatz = RealAmplitudes(num_qubits=4, reps=2)
+# VQC trained with COBYLA on 100 samples
 ```
 
-Why include this: VQC is the most "quantum-native" approach and is the subject of active research for quantum advantage in classification.
+### Step 7 — Compare Quantum vs Classical ✅ Done
+Evaluated VQC and QSVC against the classical baseline.
+**Outcome:** The classical XGBoost baseline heavily outperforms the quantum models in this experiment, primarily because it leverages the full dataset (284k samples, 30 features), while the quantum models were constrained to 100 training samples and 4 features.
 
-### Step 7 — Compare Quantum vs Classical ⏳
-Evaluate VQC and QSVM on the same 8-feature test set, using the same metrics as Phase 1.
-
-Report honestly:
-- Which model has higher PR-AUC?
-- What is the gap?
-- How long did quantum training take vs classical?
-- Does the quantum model generalize better or worse with limited training data?
-
-### Step 8 — Noise Simulation ⏳
+### Step 8 — Noise Simulation ⏳ Future
 Run the quantum circuits through Qiskit's noise simulators to model what real hardware would produce.
 
-```python
-from qiskit_aer.noise import NoiseModel
-from qiskit_ibm_runtime import QiskitRuntimeService
-# Load noise model from a real IBM backend
-noise_model = NoiseModel.from_backend(backend)
-```
-
-This step answers: how much does realistic hardware noise degrade the results?
-
-### Step 9 — IBM Quantum Hardware ⏳
+### Step 9 — IBM Quantum Hardware ⏳ Future
 Run a subset of experiments on a real IBM Quantum device.
-
-- Use IBM Quantum free tier via `QiskitRuntimeService`
-- Choose a backend with ≥ 8 qubits and low error rates
-- Run a small number of test samples (hardware is slow and queued)
 - Compare results to noiseless simulation
 
-### Step 10 — Custom Hybrid Algorithm ⏳
-If time and resources allow, explore a hybrid approach:
+### Step 10 — Custom Hybrid Algorithm ⏳ Future
+Explore a hybrid approach routing uncertain predictions to a quantum classifier.
 
-- Use XGBoost for most predictions (fast, accurate)
-- Route uncertain predictions (fraud probability near threshold) to a quantum classifier
-- This "quantum routing" approach may give the best of both worlds
-
-### Step 11 — Final Evaluation ⏳
-Write a final summary comparing all approaches:
+### Step 11 — Final Evaluation ✅ Done
+Final summary comparing the approaches based on local simulation:
 
 | Model | PR-AUC | Training time | Notes |
 |-------|--------|--------------|-------|
-| XGBoost (baseline) | 0.8557 | fast | 284,807 samples |
-| QSVM (simulator) | _TBD_ | slow | 8 features, small subset |
-| VQC (simulator) | _TBD_ | very slow | 8 features, small subset |
-| QSVM (IBM hardware) | _TBD_ | very slow + queued | noise-affected |
-| Hybrid | _TBD_ | fast+slow | routing model |
+| XGBoost (baseline) | 0.8716 | fast | 227,845 training samples, 30 features |
+| QSVC (simulator) | 0.0435 | ~82 mins | 100 training samples, 4 features |
+| VQC (simulator) | 0.0833 | ~8 sec | 100 training samples, 4 features |
 
 ---
 
