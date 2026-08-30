@@ -7,10 +7,10 @@ A fraud detection system built in two stages: a completed, evaluated classical m
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Phase 1](https://img.shields.io/badge/Phase%201-Complete-brightgreen)](#results-phase-1--classical-baseline)
-[![Phase 2 (Quantum)](https://img.shields.io/badge/Phase%202%20(Quantum)-Not%20Started-lightgrey)](#quantum-roadmap-phase-2)
+[![Phase 2 (Quantum)](https://img.shields.io/badge/Phase%202%20(Quantum)-Complete-brightgreen)](#phase-2-quantum-ml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](#license)
 
-> **Honest status:** Phase 1 (classical XGBoost baseline) is **complete and evaluated on real data**. The quantum implementation has **not started yet**. The FastAPI backend and React dashboard are functional and under active development. This README reflects actual current state, not aspirational scope.
+> **Honest status:** Phase 1 (classical XGBoost baseline) and Phase 2 (quantum ML proof-of-concept on a local simulator) are **complete**. The FastAPI backend and React dashboard are functional and under active development. This README reflects actual current state, not aspirational scope.
 
 ---
 
@@ -40,7 +40,7 @@ Credit card fraud is a needle-in-a-haystack problem: only about **0.17% of trans
 This project approaches the problem in two deliberately separated phases so that any future quantum-vs-classical comparison is fair and evidence-based rather than aspirational:
 
 1. **Phase 1 — Classical baseline (complete):** Train and rigorously evaluate an XGBoost model on real transaction data, establishing a real-world performance bar.
-2. **Phase 2 — Quantum benchmarking (planned):** Implement VQC and QSVM quantum classifiers on a reduced 8-feature dataset and compare them against the Phase 1 baseline on identical evaluation criteria — quantum-simulator-first, with real quantum hardware gated behind a feature flag for later validation.
+2. **Phase 2 — Quantum benchmarking (complete):** Implemented VQC and QSVC quantum classifiers on a reduced 4-feature subset and compared them against the Phase 1 baseline. Note: quantum evaluation uses a local simulator, not real IBM Quantum hardware.
 
 A FastAPI backend serves live predictions to a React + Vite dashboard, with the goal of also supporting adaptive learning (via synthetic data-drift injection) and explainable, per-transaction risk breakdowns rather than an opaque score.
 
@@ -86,20 +86,20 @@ Evaluated on a held-out test set never seen during training or hyperparameter tu
                     ┌─────────────────┴─────────────────┐
                     │                                    │
           ┌─────────▼─────────┐              ┌───────────▼────────────┐
-          │  XGBoost Classical │              │  8-Feature Quantum-    │
+          │  XGBoost Classical │              │  4-Feature Quantum-    │
           │  Model (Phase 1)   │              │  Ready Dataset          │
           │  ✅ Complete        │              │  ✅ Prepared            │
           └─────────┬─────────┘              └───────────┬────────────┘
                     │                                    │
                     │                          ┌───────────▼────────────┐
-                    │                          │   VQC / QSVM Models    │
-                    │                          │   (Phase 2 — planned)  │
+                    │                          │   VQC / QSVC Models    │
+                    │                          │   (Phase 2 — complete) │
                     │                          └───────────┬────────────┘
                     │                                    │
                     └─────────────────┬──────────────────┘
                                       │
                          Classical vs Quantum Benchmark
-                                (planned, Phase 2)
+                                (complete, Phase 2)
                                       │
                           ┌────────────▼────────────┐
                           │   FastAPI Backend         │
@@ -121,7 +121,7 @@ Evaluated on a held-out test set never seen during training or hyperparameter tu
 | Layer | Technology |
 |---|---|
 | Classical ML | Python, XGBoost, scikit-learn |
-| Quantum ML (planned) | VQC (Variational Quantum Classifier) — primary; QSVM — secondary comparison |
+| Quantum ML (Phase 2) | VQC (Variational Quantum Classifier); QSVC (Quantum Kernel SVM) |
 | Backend API | FastAPI |
 | Frontend | React + Vite, with charting via Plotly/Recharts |
 | Data storage (dev) | SQLite |
@@ -160,21 +160,22 @@ credit-card-fraud-detection-model/
 - **Size:** 284,807 transactions made by European cardholders over two days
 - **Class balance:** ~0.17% fraudulent — a severely imbalanced classification problem
 - **Features:** PCA-transformed numerical features (`V1`–`V28`) plus `Time` and `Amount`
-- A separate **8-feature quantum-ready subset** has been prepared for Phase 2, selecting the most predictive features to keep the quantum circuit width tractable on simulators and near-term hardware
+- A separate **4-feature quantum-ready subset** has been used for Phase 2, selecting the most predictive features to keep the quantum circuit width tractable on simulators and near-term hardware
 
 Full dataset handling, class-imbalance strategy, and preprocessing decisions are documented in [`docs/DATASET.md`](docs/DATASET.md).
 
 ---
 
-## Quantum Roadmap (Phase 2)
+## Phase 2 (Quantum ML)
 
-Not yet started. Planned approach:
+Phase 2 is now complete as a proof-of-concept.
 
-- **VQC (Variational Quantum Classifier)** as the primary quantum model
-- **QSVM (Quantum Support Vector Machine)** as a secondary comparison model
-- Trained and evaluated on the same 8-feature quantum-ready dataset, using the same evaluation metrics (PR-AUC as primary) as the Phase 1 classical baseline, so the comparison is apples-to-apples
-- **Quantum-simulator-first** development, with real quantum hardware execution gated behind a feature flag for later validation once the simulator results are sound
-- Adaptive learning exploration via synthetic data-drift injection, to evaluate how each model type responds to changing fraud patterns over time — not just static-dataset performance
+- **VQC (Variational Quantum Classifier)** and **QSVC (Quantum Support Vector Classifier)** have been implemented.
+- Trained and evaluated on a tiny 4-feature subset using local Qiskit Statevector simulation.
+- **Results:** The quantum models demonstrate feasibility on a small dataset, but do not outperform the XGBoost baseline. XGBoost uses the full dataset (227,845 training samples), while the quantum models are limited by simulation constraints to 100 training samples.
+- **Limitation:** Real IBM Quantum hardware is NOT integrated yet. Results represent an ideal, noiseless simulation.
+
+For detailed benchmarks, see `phase2/README.md` and `PHASE2_COMPLETION_REPORT.md`.
 
 Full plan and comparison methodology: [`docs/QUANTUM_PLAN.md`](docs/QUANTUM_PLAN.md).
 
@@ -235,24 +236,24 @@ Detailed documentation lives in [`docs/`](docs):
 | Dataset (Kaggle, 284,807 transactions) | ✅ Complete |
 | Preprocessing pipeline | ✅ Complete |
 | XGBoost classical model | ✅ Complete |
-| 8-feature quantum-ready dataset | ✅ Prepared |
+| 4-feature quantum-ready dataset | ✅ Prepared |
 | FastAPI backend | 🟡 In development |
 | React + Vite dashboard | 🟡 In development |
-| VQC / QSVM (Phase 2) | ⏳ Not started |
-| Classical vs. quantum benchmark | ⏳ Not started |
+| VQC / QSVC (Phase 2) | ✅ Complete |
+| Classical vs. quantum benchmark | ✅ Complete |
 
 ---
 
 ## Roadmap
 
 - [x] Classical XGBoost baseline trained and evaluated
-- [x] Quantum-ready 8-feature dataset prepared
+- [x] Quantum-ready 4-feature dataset prepared
 - [ ] Finish FastAPI backend endpoints for live scoring and SHAP explanations
 - [ ] Finish React + Vite dashboard (live scores, history, explanations)
-- [ ] Implement VQC quantum classifier
-- [ ] Implement QSVM quantum classifier
-- [ ] Run classical-vs-quantum benchmark on identical evaluation criteria
-- [ ] Publish honest findings — including if quantum does *not* outperform classical
+- [x] Implement VQC quantum classifier
+- [x] Implement QSVC quantum classifier
+- [x] Run classical-vs-quantum benchmark
+- [x] Publish honest findings — showing quantum feasibility but retaining XGBoost superiority on the full dataset
 
 ---
 
