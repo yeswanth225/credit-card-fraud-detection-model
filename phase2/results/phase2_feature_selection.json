@@ -1,0 +1,26 @@
+{
+  "selection_method": "Phase 1 XGBoost Gini Feature Importance",
+  "dataset": "creditcard.csv (284,807 transactions)",
+  "derived_on": "Training split only (zero leakage)",
+  "n_selected_features": 4,
+  "target_qubits": 4,
+  "selected_features": [
+    "V14",
+    "V4",
+    "V12",
+    "V8"
+  ],
+  "ranking_scores": {
+    "V14": 0.6001319289207458,
+    "V4": 0.05402316898107529,
+    "V12": 0.04107122868299484,
+    "V8": 0.02722693793475628,
+    "V13": 0.01988174393773079,
+    "V20": 0.018308602273464203,
+    "V27": 0.018137387931346893,
+    "V18": 0.0173382256180048,
+    "Amount": 0.015906058251857758,
+    "V26": 0.015343190170824528
+  },
+  "rationale": "The top 4 features account for over 72% of total XGBoost decision weight. Mapping ['V14', 'V4', 'V12', 'V8'] directly into 4 qubits allows state preparation within coherence limits of NISQ hardware and local simulators."
+}

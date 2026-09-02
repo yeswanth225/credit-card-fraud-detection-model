@@ -75,15 +75,24 @@ A dashboard for fraud analysts.
 
 ---
 
-### 4. Quantum ML Pipeline ✅ Complete
+### 4. Quantum ML Pipeline ✅ Upgraded (Phase 2 Real-Dataset Benchmark)
 
-Phase 2 is complete in the `phase2/` directory and uses local Qiskit Statevector simulation.
+Phase 2 has been upgraded from an initial 100-sample proof-of-concept to a **scientifically rigorous real-dataset benchmark** using the full 284,807-transaction European Credit Card Fraud Detection dataset.
 
-Completed components:
-- **Feature reduction:** Top 4 features extracted for quantum use.
-- **VQC:** Variational Quantum Classifier using Qiskit.
-- **QSVC:** Quantum Support Vector Classifier using Qiskit.
-- **Benchmark:** Compare quantum models against the Phase 1 XGBoost baseline using the actual local-simulation configuration in `phase2/quantum/config.py`.
+**Completed components:**
+- **Real Dataset Integration:** Loaded `data/raw/creditcard.csv` (284,807 transactions, 492 fraud, 0.17% prevalence).
+- **Zero-Leakage Splits:** Stratified 60%/20%/20% Train/Val/Test (`random_state=42`). `StandardScaler` and quantum angle scaler fitted on train split only.
+- **Top 4 Feature Selection:** `V14`, `V4`, `V12`, `V8` selected from Phase 1 XGBoost importance (>72% of total decision weight). Artifact saved at `phase2/results/phase2_feature_selection.json`.
+- **Angle Encoding:** 4 features → 4 qubits, mapped to $[-\pi, \pi]$ via `ZZFeatureMap(reps=2)`.
+- **QSVC:** Quantum Kernel SVM using `FidelityQuantumKernel` (local Qiskit Statevector simulator).
+- **VQC:** `RealAmplitudes` ansatz + COBYLA optimizer, validation-tuned decision threshold.
+- **XGBoost-4F Baseline:** Classical XGBoost trained on the exact same 4 features for fair architectural comparison.
+- **Visualizations:** PR curves, ROC curves, confusion matrices, feature importance plot, circuit diagram — saved in `phase2/results/plots/`.
+
+**CLI Command:**
+```bash
+python -m phase2.experiments.phase2_benchmark_real --max-train-samples 300 --max-val-samples 150 --max-test-samples 600
+```
 
 ---
 

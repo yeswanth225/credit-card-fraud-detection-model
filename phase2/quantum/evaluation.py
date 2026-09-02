@@ -227,8 +227,60 @@ def compare_metrics(
     print("  [value] = best per row\n")
 
 
+def optimize_threshold_on_val(
+    y_val: np.ndarray,
+    y_prob: np.ndarray,
+    candidate_thresholds: Optional[np.ndarray] = None,
+    metric: str = "f1",
+) -> Tuple[float, float]:
+    """
+    Find the optimal classification threshold using VALIDATION data ONLY.
+
+    Parameters
+    ----------
+    y_val : np.ndarray
+        Validation true labels.
+    y_prob : np.ndarray
+        Validation predicted fraud probabilities.
+    candidate_thresholds : np.ndarray, optional
+        Grid of thresholds to search (default: 0.05 to 0.95 in 0.01 increments).
+    metric : str
+        Target metric to optimize ('f1', 'precision', 'recall'). Default: 'f1'.
+
+    Returns
+    -------
+    (best_threshold, best_score)
+    """
+    if len(y_val) == 0 or len(y_prob) == 0:
+        return 0.5, 0.0
+
+    if candidate_thresholds is None:
+        candidate_thresholds = np.linspace(0.05, 0.95, 91)
+
+    best_threshold = 0.5
+    best_score = -1.0
+
+    for thresh in candidate_thresholds:
+        preds = (y_prob >= thresh).astype(int)
+        if metric == "f1":
+            score = float(f1_score(y_val, preds, zero_division=0))
+        elif metric == "precision":
+            score = float(precision_score(y_val, preds, zero_division=0))
+        elif metric == "recall":
+            score = float(recall_score(y_val, preds, zero_division=0))
+        else:
+            score = float(f1_score(y_val, preds, zero_division=0))
+
+        if score > best_score:
+            best_score = score
+            best_threshold = float(thresh)
+
+    return best_threshold, best_score
+
+
 def _fmt(val: float) -> str:
     """Format a float metric value for display."""
     if np.isnan(val):
         return "  N/A"
     return f"{val:.4f}"
+

@@ -1,0 +1,156 @@
+{
+  "timestamp": "2026-09-02 21:52:58",
+  "dataset": "European Credit Card Fraud Detection (creditcard.csv)",
+  "methodology": "Real-dataset stratified split (60% Train, 20% Val, 20% Test)",
+  "selected_features": [
+    "V14",
+    "V4",
+    "V12",
+    "V8"
+  ],
+  "n_qubits": 4,
+  "models": [
+    {
+      "model": "XGBoost (Phase 1 Baseline)",
+      "model_type": "Classical (Full)",
+      "n_features": 30,
+      "n_qubits": "N/A",
+      "n_train": 227845,
+      "n_test": 56962,
+      "pr_auc": 0.8716329310770835,
+      "roc_auc": 0.9692409673492357,
+      "f1": 0.8723404255319149,
+      "precision": 0.9111111111111111,
+      "recall": 0.8367346938775511,
+      "false_positive_rate": 0.00014068655036578504,
+      "accuracy": 0.9995786664794073,
+      "training_time_seconds": "Verified Phase 1",
+      "inference_time_seconds": "Verified Phase 1",
+      "threshold": 0.7000000000000002,
+      "source": "data/processed/phase1_results.json"
+    },
+    {
+      "model": "XGBoost-4F",
+      "model_type": "Classical (4 Features)",
+      "n_features": 4,
+      "n_qubits": "N/A",
+      "n_train": 40,
+      "n_test": 40,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "f1": 0.2857142857142857,
+      "precision": 0.16666666666666666,
+      "recall": 1.0,
+      "false_positive_rate": 0.1282051282051282,
+      "accuracy": 0.875,
+      "confusion_matrix": [
+        [
+          34,
+          5
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "training_time_seconds": 0.1388,
+      "inference_time_seconds": 0.0016,
+      "threshold": 0.53,
+      "source": "Trained on real 4-feature subset"
+    },
+    {
+      "model": "QSVC (Quantum Kernel SVM)",
+      "model_type": "Quantum Kernel",
+      "n_features": 4,
+      "n_qubits": 4,
+      "n_train": 40,
+      "n_test": 40,
+      "pr_auc": 0.16666666666666666,
+      "roc_auc": 0.8717948717948718,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "false_positive_rate": 0.1282051282051282,
+      "accuracy": 0.85,
+      "confusion_matrix": [
+        [
+          34,
+          5
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "training_time_seconds": 3.607,
+      "inference_time_seconds": 7.305,
+      "threshold": 0.6,
+      "source": "Local Qiskit Statevector Simulation"
+    },
+    {
+      "model": "VQC (Variational Quantum Classifier)",
+      "model_type": "Variational Quantum",
+      "n_features": 4,
+      "n_qubits": 4,
+      "n_train": 40,
+      "n_test": 40,
+      "pr_auc": 0.5,
+      "roc_auc": 0.9743589743589743,
+      "f1": 0.6666666666666666,
+      "precision": 0.5,
+      "recall": 1.0,
+      "false_positive_rate": 0.02564102564102564,
+      "accuracy": 0.975,
+      "confusion_matrix": [
+        [
+          38,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "training_time_seconds": 1.465,
+      "inference_time_seconds": 0.095,
+      "threshold": 0.66,
+      "source": "Local Qiskit Statevector Simulation"
+    }
+  ],
+  "dataset_split_metadata": {
+    "dataset_name": "creditcard.csv",
+    "total_dataset_rows": 284807,
+    "total_dataset_fraud": 492,
+    "split_ratios": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "train_full_size": 170883,
+    "train_full_fraud": 295,
+    "val_full_size": 56962,
+    "val_full_fraud": 99,
+    "test_full_size": 56962,
+    "test_full_fraud": 98,
+    "selected_features": [
+      "V14",
+      "V4",
+      "V12",
+      "V8"
+    ],
+    "n_qubits": 4,
+    "balancing_strategy": "balanced_train_real_test",
+    "qml_train_size": 40,
+    "qml_train_fraud": 20,
+    "qml_val_size": 20,
+    "qml_val_fraud": 1,
+    "qml_test_size": 40,
+    "qml_test_fraud": 1,
+    "qml_test_fraud_rate": 0.025,
+    "angle_range": [
+      -3.141592653589793,
+      3.141592653589793
+    ]
+  },
+  "scientific_conclusion": "The experiment demonstrates that quantum machine learning algorithms (QSVC, VQC) can be trained and evaluated on real credit-card transactions using a 4-qubit mapping. Classical XGBoost achieves superior PR-AUC due to higher feature capacity (30 vs 4 features), mature tree-ensemble handling of non-linear financial patterns, and extensive sample capacity."
+}

@@ -45,3 +45,56 @@ def test_analyst_transactions_endpoint(client):
     response = client.get("/api/analyst/transactions")
     assert response.status_code != 500
     assert response.status_code in (200, 404, 422)
+
+
+def test_verification_predict_endpoint(client):
+    """Verify live prediction endpoint with sample transaction payload."""
+    payload = {
+        "amount": 250.0,
+        "time_delta": 3600.0,
+        "features": {"V1": -1.5, "V4": 2.1, "V14": -3.8}
+    }
+    response = client.post("/api/verification/predict", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "is_fraud_classical" in data
+    assert "fraud_probability_classical" in data
+    assert 0.0 <= data["fraud_probability_classical"] <= 1.0
+    assert "explanation_classical" in data
+
+
+def test_verification_predict_validation_error(client):
+    """Verify that invalid payload types return 422 Unprocessable Entity."""
+    response = client.post("/api/verification/predict", json={"amount": "invalid_number"})
+    assert response.status_code == 422
+
+
+def test_verification_batch_predict(client):
+    """Verify batch prediction endpoint."""
+    batch = [
+        {"amount": 50.0, "time_delta": 100.0, "features": {}},
+        {"amount": 1500.0, "time_delta": 200.0, "features": {"V14": -5.0}}
+    ]
+    response = client.post("/api/verification/batch-predict", json=batch)
+    assert response.status_code == 200
+    data = response.json()
+    assert "results" in data
+    assert len(data["results"]) == 2
+
+
+def test_verification_model_info(client):
+    """Verify model info returns valid architecture metadata."""
+    response = client.get("/api/verification/model-info")
+    assert response.status_code == 200
+    data = response.json()
+    assert "classical_model" in data
+    assert "quantum_model" in data
+
+
+def test_admin_benchmarks_endpoint(client):
+    """Verify admin benchmarks endpoint loads results correctly."""
+    response = client.get("/api/admin/benchmarks")
+    assert response.status_code == 200
+    data = response.json()
+    assert "conclusion" in data
+

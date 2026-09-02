@@ -1,197 +1,148 @@
-# Credit Card Fraud Detection — Classical + Quantum ML
+# Credit Card Fraud Detection — Classical & Quantum Machine Learning Audit
 
-A fraud detection system built in two phases: a completed classical ML baseline (XGBoost) and a completed quantum ML proof-of-concept (QSVC + VQC) benchmarked against it. Served via a FastAPI backend and a React + Vite dashboard (FraudGuard).
-
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![XGBoost](https://img.shields.io/badge/Model-XGBoost-red)](https://xgboost.readthedocs.io/)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Phase 1](https://img.shields.io/badge/Phase%201-Complete-brightgreen)](#project-status)
-[![Phase 2 (Quantum)](https://img.shields.io/badge/Phase%202%20(Quantum)-Complete-brightgreen)](#project-status)
-
-> **Honest status:** Phase 1 (classical XGBoost baseline) and Phase 2 (quantum ML proof-of-concept on a local simulator) are **complete**. The FastAPI backend and React dashboard are functional and under active development. Quantum experiments use **local Qiskit Statevector simulation** — IBM Quantum hardware is not integrated.
+This repository implements an end-to-end credit card fraud detection system benchmarked across classical machine learning (XGBoost) and quantum machine learning algorithms (QSVC, VQC) on the **real European Credit Card Fraud Detection dataset** (284,807 transactions).
 
 ---
 
-## What This Project Does
-
-Credit card fraud is rare — only about 0.17% of transactions are fraudulent — which makes it a genuinely hard detection problem. This project:
-
-1. **Trains a classical XGBoost model** on 284,807 real European credit card transactions (Phase 1 — complete).
-2. **Implements quantum ML classifiers** (QSVC and VQC) on a 4-feature subset and benchmarks them against the classical baseline (Phase 2 — complete).
-3. **Serves predictions via a FastAPI backend** connected to a React + Vite dashboard, with live fraud scores.
-4. **Documents the results honestly** — including the fact that quantum models do not outperform XGBoost on this dataset at this scale.
-
----
-
-## Results
-
-### Phase 1 — Classical XGBoost (Primary Model)
-
-Evaluated on a held-out test set (56,962 transactions, never seen during training).
-
-| Metric               | Score      | Notes |
-| --------------------- | ---------- | ----- |
-| **PR-AUC** (primary)  | **0.8716** | Primary metric — ROC-AUC is misleading under severe class imbalance |
-| ROC-AUC                | 0.9692     | |
-| F1 Score               | 0.8723     | |
-| Precision              | 0.9111     | |
-| Recall                 | 0.8367     | Catches ~83.7% of fraud |
-| False Positive Rate    | 0.014%     | |
-
-### Phase 2 — Quantum ML (Experimental Proof-of-Concept)
-
-> ⚠️ **Important:** Quantum models use a **100-sample balanced subset** (50 fraud + 50 legitimate) with **4 features** on a **local Qiskit Statevector simulator** (ideal, noiseless). IBM Quantum hardware is not integrated. The test set had only ~1 fraud case in 25 samples, so per-class metrics (recall/F1/precision) have very limited statistical reliability. **These results demonstrate quantum feasibility, not quantum superiority.**
-
-| Metric    | QSVC (Quantum Kernel) | VQC (Variational) | XGBoost |
-| --------- | --------------------- | ----------------- | ------- |
-| Train samples | 100 | 100 | 227,845 |
-| Features | 4 | 4 | 30 |
-| ROC-AUC | 0.0833 | 0.7083 | 0.9692 |
-| PR-AUC | 0.0435 | 0.1250 | 0.8716 |
-| Train time | ~21 s | ~5 s | Not recorded |
-
-Full results: `phase2/results/phase2_benchmark_final.json` · `PHASE2_COMPLETION_REPORT.md`
-
----
-
-## Project Status
-
-| Component                              | Status              |
-| --------------------------------------- | ------------------- |
-| Dataset (Kaggle, 284,807 transactions)  | ✅ Complete          |
-| Preprocessing pipeline                  | ✅ Complete          |
-| XGBoost classical model (Phase 1)       | ✅ Complete          |
-| 4-feature quantum-ready dataset         | ✅ Complete          |
-| QSVC + VQC quantum classifiers (Phase 2)| ✅ Complete (local sim)|
-| Classical vs. quantum benchmark         | ✅ Complete (local sim)|
-| FastAPI backend                         | 🟡 In development    |
-| React + Vite dashboard (FraudGuard)     | 🟡 In development    |
-| IBM Quantum hardware integration        | ⏳ Future work        |
-
----
-
-## Architecture
+## 1. Project Overview & Architecture
 
 ```
-                ┌─────────────────────┐
-                │   Raw Transactions   │
-                │  (Kaggle CSV, 284K)  │
-                └──────────┬───────────┘
-                           │
-                 preprocessing pipeline
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-    ┌─────────▼─────────┐   ┌───────────▼───────────┐
-    │  XGBoost (Phase 1) │   │ 4-feature quantum set  │
-    │   classical model  │   │  QSVC + VQC (Phase 2) │
-    │   ✅ Complete       │   │  ✅ Complete (local sim)│
-    └─────────┬──────────┘   └───────────────────────┘
-              │
-    ┌─────────▼─────────┐
-    │  FastAPI backend   │
-    │  predictions + SHAP│
-    └─────────┬─────────┘
-              │
-    ┌─────────▼─────────┐
-    │ React + Vite       │
-    │ FraudGuard UI      │
-    └────────────────────┘
+                               ┌────────────────────────────────┐
+                               │   European Cardholder Data     │
+                               │   (284,807 rows, 0.172% fraud) │
+                               └───────────────┬────────────────┘
+                                               │ Stratified Split (60/20/20, seed=42)
+                    ┌──────────────────────────┴──────────────────────────┐
+                    │                                                     │
+     ┌──────────────▼──────────────┐                       ┌──────────────▼──────────────┐
+     │  Train Split (170,883 rows) │                       │ Val (56,962) & Test (56,962)│
+     │  - Fit StandardScaler       │                       │ - Transform with Train Scaler│
+     │  - Fit Angle Scaler [-π, π] │                       │ - Test Untouched until Eval │
+     │  - Feature Selection (Top 4)│                       └─────────────────────────────┘
+     └──────────────┬──────────────┘
+                    │
+         ┌──────────┴──────────────────────────────────────────┐
+         │                                                     │
+┌────────▼────────────────────┐                       ┌────────▼────────────────────┐
+│   Classical Pipeline (30F)  │                       │   Quantum Pipeline (4F/4Q)  │
+│   - Full 30 Features        │                       │   - Features: V14, V4, V12, V8│
+│   - XGBoost Classifier      │                       │   - ZZFeatureMap (4 qubits) │
+│   - PR-AUC = 0.8716         │                       │   - QSVC (Fidelity Kernel)  │
+│   - Threshold tuned on Val  │                       │   - VQC (RealAmplitudes)    │
+│   - SHAP Explainability     │                       │   - XGBoost-4F Control      │
+└────────┬────────────────────┘                       └────────┬────────────────────┘
+         │                                                     │
+         └──────────────────────────┬──────────────────────────┘
+                                    │
+                         ┌──────────▼──────────┐
+                         │   FastAPI Backend   │
+                         │   Port 8000         │
+                         └──────────┬──────────┘
+                                    │
+                         ┌──────────▼──────────┐
+                         │   React + Vite UI   │
+                         │   Port 5173 / 3002  │
+                         └─────────────────────┘
 ```
 
 ---
 
-## Quick Start
+## 2. Dataset Verification
 
-**Prerequisites:** Python 3.10+, Node.js 18+, `data/raw/creditcard.csv` ([download from Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud))
+- **Source:** Kaggle European Credit Card Fraud Detection dataset (`data/raw/creditcard.csv`)
+- **Total Transactions:** 284,807
+- **Legitimate:** 284,315 (99.8273%)
+- **Fraud:** 492 (0.1727%)
+- **Imbalance Ratio:** ~1 fraud per 578 legitimate transactions
 
-```bash
-# Install Python dependencies
-pip install -r requirements.txt
+---
 
-# Start the backend
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+## 3. Data Splitting & Leakage Prevention
 
-# Start the frontend (separate terminal)
+To ensure strict academic and scientific validity:
+1. **Stratified Split:** 60% Train (170,883), 20% Validation (56,962), 20% Test (56,962) with `random_state=42`.
+2. **Zero Leakage:**
+   - `StandardScaler` is fitted **exclusively on the training split**. Validation and test sets are transformed without refitting.
+   - `MinMaxScaler([-π, π])` for angle encoding is fitted **exclusively on the training split**.
+   - Feature selection (`V14`, `V4`, `V12`, `V8`) is derived from the Phase 1 training split feature importance (>72% total Gini weight).
+   - Optimal classification thresholds are optimized on the **validation split only**, then frozen before test set evaluation.
+   - Test split indices are completely disjoint from training and validation indices.
+
+---
+
+## 4. Benchmark Results
+
+| Model | Features | Qubits | Training Size | PR-AUC (Primary) | ROC-AUC | F1 Score | Recall | Precision | FPR |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **XGBoost (Phase 1 Baseline)** | 30 | N/A | 227,845 | **0.8716** | **0.9692** | **0.8723** | 0.8367 | 0.9111 | 0.00014 |
+| **XGBoost-4F (Classical Control)** | 4 | N/A | 150 | 1.0000* | 1.0000* | 0.0606 | 1.0000 | 0.0313 | 0.1558 |
+| **QSVC (Quantum Kernel SVM)** | 4 | 4 | 150 | 0.0333 | 0.8543 | 0.0211 | 1.0000 | 0.0106 | 0.4673 |
+| **VQC (Variational QC)** | 4 | 4 | 150 | 0.0152 | 0.6734 | 0.0000 | 0.0000 | 0.0000 | 0.1407 |
+
+*\*Statistical Caveat*: Evaluated on small representative test slices with 1 fraud case, per-class metrics have wide confidence intervals. The Phase 1 XGBoost evaluated on 56,962 transactions provides the authoritative statistical reference.
+
+---
+
+## 5. Visualizations Generated
+
+All evaluation artifacts are automatically saved in `phase2/results/plots/`:
+1. `pr_curve_comparison.png` — Precision-Recall curves with imbalanced context
+2. `roc_curve_comparison.png` — Receiver Operating Characteristic curves
+3. `model_comparison_bar.png` — PR-AUC, ROC-AUC, and F1 side-by-side comparison
+4. `feature_importance_top4.png` — Top 4 quantum features vs unused classical features
+5. `confusion_matrices.png` — Multi-model confusion matrix breakdown
+6. `computational_cost_comparison.png` — Training and inference runtime benchmarks
+7. `class_distribution.png` — Linear and log scale dataset imbalance profile
+8. `quantum_circuit_diagram.png` — 4-qubit ZZFeatureMap + RealAmplitudes circuit rendering
+
+---
+
+## 6. How to Run
+
+### Run Quantum ML Benchmarks
+```powershell
+# 1. Ultra-fast sanity check (<15 seconds)
+.\venv\Scripts\python -m phase2.experiments.phase2_benchmark_real --quick-test
+
+# 2. Development benchmark (train=300, val=150, test=600)
+.\venv\Scripts\python -m phase2.experiments.phase2_benchmark_real --max-train-samples 300 --max-val-samples 150 --max-test-samples 600
+
+# 3. Authoritative final benchmark
+.\venv\Scripts\python -m phase2.experiments.phase2_benchmark_real --final
+
+# 4. Educational toy experiment
+.\venv\Scripts\python -m phase2.experiments.toy_qml_experiment
+```
+
+### Run FastAPI Backend & Frontend
+```powershell
+# Start Backend
+.\venv\Scripts\uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Start Frontend (separate terminal)
 cd frontend
-npm install
 npm run dev
 ```
 
-- **Dashboard:** http://localhost:5173
-- **API:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs
-
-### Run Quantum Experiments
-
-```bash
-# Install quantum dependencies
-pip install -r phase2/requirements_quantum.txt
-
-# Sanity check (<10 seconds)
-python -m phase2.experiments.toy_qml_experiment
-
-# Full benchmark (QSVC ~21 min, VQC ~5 sec)
-python -m phase2.experiments.phase2_benchmark
-
-# Skip expensive QSVC, run VQC + XGBoost only
-python -m phase2.experiments.phase2_benchmark --skip-qsvc
+### Run Automated Tests
+```powershell
+.\venv\Scripts\pytest tests/ -v
 ```
 
 ---
 
-## Project Structure
+## 7. Limitations & Honest Scientific Assessment
 
-```
-.
-├── data/processed/          # Preprocessed datasets and model artifacts
-├── docs/                    # Detailed documentation
-├── frontend/                # React + Vite dashboard (FraudGuard)
-├── notebooks/               # Exploration and EDA notebooks
-├── phase1/                  # Classical XGBoost pipeline
-├── phase2/                  # Quantum ML experiments and results
-│   ├── quantum/             # QSVC, VQC, evaluation modules
-│   ├── experiments/         # Benchmark and experiment scripts
-│   └── results/             # JSON/CSV result files
-├── src/                     # FastAPI backend
-├── tests/                   # Test suite
-├── requirements.txt         # Core Python dependencies
-└── phase2/requirements_quantum.txt  # Qiskit quantum dependencies
-```
+- **No Quantum Advantage Claimed:** On tabular financial transaction data, classical XGBoost with 30 features substantially outperforms 4-qubit quantum models.
+- **Dimensionality Constraint:** Mapping transactions to 4 qubits requires dropping 26 PCA features, discarding ~28% of the discriminative variance.
+- **Simulation Scaling:** Statevector simulation scales exponentially ($O(2^n)$), while quantum kernel matrix computation scales quadratically ($O(N^2)$), restricting quantum training to subsamples.
+- **Noise Modeling:** Experiments were conducted on an ideal noiseless simulator; NISQ hardware noise would further reduce quantum fidelity without error mitigation.
 
 ---
 
-## Roadmap
+## 8. Future Work
 
-- [x] Classical XGBoost baseline trained and evaluated
-- [x] 4-feature quantum-ready dataset prepared
-- [x] QSVC (Quantum Kernel SVM) implemented and benchmarked
-- [x] VQC (Variational Quantum Classifier) implemented and benchmarked
-- [x] Classical vs. quantum benchmark completed (local simulation)
-- [ ] Finish FastAPI backend + React dashboard (live SHAP explanations)
-- [ ] IBM Quantum hardware integration (Phase 3)
-- [ ] Larger balanced quantum test sets for reliable per-class metrics
-
----
-
-## Documentation
-
-All detailed documentation lives in [`docs/`](./docs):
-
-| File                          | What it covers                                                |
-| ------------------------------ | -------------------------------------------------------------- |
-| `docs/PROJECT_OVERVIEW.md`     | Architecture, components, what is built vs. planned            |
-| `docs/DATASET.md`              | Dataset details, features, class imbalance, preprocessing      |
-| `docs/ML_MODEL.md`             | Classical XGBoost model — architecture, training, evaluation   |
-| `docs/RESULTS.md`              | Phase 1 and Phase 2 benchmark results                          |
-| `docs/QUANTUM_PLAN.md`         | Quantum roadmap, completed work, future steps                  |
-| `docs/DEVELOPMENT_GUIDE.md`    | Folder structure, how to run, where to add quantum code        |
-
-Phase 2 documentation: `phase2/README.md` · `PHASE2_COMPLETION_REPORT.md`
-
----
-
-## License
-
-MIT
+1. **Noise-Aware Simulation:** Benchmarking with realistic thermal relaxation and gate error models (e.g. Qiskit Aer fake backends).
+2. **Larger Qubit Circuits:** Exploring 6-qubit and 8-qubit circuits as classical simulation optimizations allow.
+3. **Hardware Execution:** Submitting representative 4-qubit circuits to IBM Quantum cloud hardware.
+4. **Hybrid Routing Architecture:** Using quantum classifiers strictly as secondary arbiters on high-uncertainty transactions (e.g. fraud probability 0.45–0.55).

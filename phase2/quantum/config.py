@@ -101,9 +101,22 @@ class QuantumConfig:
 
     # --- Circuit dimensions ---
     n_qubits: int = 4
+    n_features: int = 4
     feature_indices: List[int] = field(default_factory=lambda: [0, 1, 2, 3])
+    selected_features: List[str] = field(default_factory=lambda: ["V14", "V4", "V12", "V8"])
 
-    # --- Dataset sub-sampling ---
+    # --- Real Dataset Pipeline Settings ---
+    raw_data_path: Path = field(default_factory=lambda: _REPO_ROOT / "data" / "raw" / "creditcard.csv")
+    split_ratio: tuple[float, float, float] = (0.60, 0.20, 0.20)
+    max_train_samples: int = 400
+    max_val_samples: int = 200
+    max_test_samples: int = 800
+    balancing_strategy: str = "balanced_train_real_test"
+    feature_encoding: str = "angle_rotation"
+    feature_encoding_range: tuple[float, float] = (-3.141592653589793, 3.141592653589793)
+    quantum_backend: str = "statevector_simulator"
+
+    # --- Dataset sub-sampling (backward compatibility) ---
     train_subset_size: int = 100
     test_subset_size: int = 25
     balanced_train: bool = True
@@ -157,23 +170,45 @@ class QuantumConfig:
     def results_dir(self) -> Path:
         return PHASE2_RESULTS_DIR
 
+    @property
+    def plots_dir(self) -> Path:
+        p = PHASE2_RESULTS_DIR / "plots"
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    @property
+    def benchmark_real_results_path(self) -> Path:
+        return PHASE2_RESULTS_DIR / "phase2_benchmark_real.json"
+
+    @property
+    def feature_selection_path(self) -> Path:
+        return PHASE2_RESULTS_DIR / "phase2_feature_selection.json"
+
+    @property
+    def metrics_csv_path(self) -> Path:
+        return PHASE2_RESULTS_DIR / "phase2_metrics.csv"
+
     def summary(self) -> str:
         """Return a human-readable summary of the active configuration."""
         lines = [
             "=" * 60,
-            "  Phase 2 Quantum Config",
+            "  Phase 2 Quantum Real-Dataset Configuration",
             "=" * 60,
+            f"  Dataset           : {self.raw_data_path.name} ({self.raw_data_path})",
+            f"  Split ratio       : {self.split_ratio} (Train/Val/Test)",
             f"  n_qubits          : {self.n_qubits}",
-            f"  feature_indices   : {self.feature_indices}",
-            f"  train_subset_size : {self.train_subset_size}",
-            f"  test_subset_size  : {self.test_subset_size}",
-            f"  balanced_train    : {self.balanced_train}",
+            f"  n_features        : {self.n_features}",
+            f"  selected_features : {self.selected_features}",
+            f"  max_train_samples : {self.max_train_samples} ({self.balancing_strategy})",
+            f"  max_val_samples   : {self.max_val_samples}",
+            f"  max_test_samples  : {self.max_test_samples} (real-world imbalance)",
+            f"  encoding          : {self.feature_encoding} [{self.feature_encoding_range[0]:.2f}, {self.feature_encoding_range[1]:.2f}]",
+            f"  simulator         : {self.quantum_backend}",
             f"  random_seed       : {self.random_seed}",
             f"  shots             : {self.shots} (None=statevector)",
             f"  zz_reps           : {self.zz_reps}",
             f"  vqc_reps          : {self.vqc_reps}",
-            f"  vqc_max_iter      : {self.vqc_max_iter}",
-            f"  vqc_optimizer     : {self.vqc_optimizer}",
+            f"  vqc_max_iter      : {self.vqc_max_iter} ({self.vqc_optimizer})",
             f"  svm_C             : {self.svm_C}",
             "=" * 60,
         ]
