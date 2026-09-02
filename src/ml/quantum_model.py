@@ -25,7 +25,7 @@ def get_quantum_models():
         return _quantum_cache
 
     try:
-        base_path = Path(__file__).parent.parent.parent / "phase2" / "quantum"
+        base_path = Path(__file__).resolve().parent.parent.parent / "phase2" / "quantum"
 
         # Try to load pre-trained quantum models
         qsvc_path = base_path / "qsvc_model.joblib"

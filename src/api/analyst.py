@@ -24,7 +24,7 @@ _model_cache = {}
 def get_model_data():
     """Load model, scaler, and test data on first use."""
     if "model" not in _model_cache:
-        base_path = Path(__file__).parent.parent.parent / "data" / "processed"
+        base_path = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
 
         model_path = base_path / "xgboost_model.joblib"
         if not model_path.exists():
@@ -38,7 +38,7 @@ def get_model_data():
 
         # Load dataset matching scaler's 30 features
         feature_cols = [f"V{i}" for i in range(1, 29)] + ["Time", "Amount"]
-        df_real_path = Path("D:/datasets/creditcard.csv")
+        df_real_path = Path(__file__).resolve().parent.parent.parent / "data" / "raw" / "creditcard.csv"
 
         if df_real_path.exists():
             df_full = pd.read_csv(df_real_path)
@@ -56,12 +56,14 @@ def get_model_data():
             if test_path.exists():
                 test_df = pd.read_parquet(test_path)
             else:
-                raw_path = Path(__file__).parent.parent.parent / "data" / "raw" / "creditcard_synthetic.csv"
+                raw_path = Path(__file__).resolve().parent.parent.parent / "data" / "raw" / "creditcard_synthetic.csv"
                 if raw_path.exists():
                     df_full = pd.read_csv(raw_path)
+                    test_df = df_full.sample(n=min(1000, len(df_full)), random_state=42)
                 else:
-                    df_full = pd.read_csv(Path(__file__).parent.parent.parent / "data" / "raw" / "creditcard.csv")
-                test_df = df_full.sample(n=min(1000, len(df_full)), random_state=42)
+                    # Fallback for production deployment where data files are ignored
+                    test_df = pd.DataFrame([{f"V{i}": 0.0 for i in range(1, 29)} | {"Time": 0.0, "Amount": 100.0, "Class": 0}])
+
 
             for i in range(1, 29):
                 if f"V{i}" not in test_df.columns:
