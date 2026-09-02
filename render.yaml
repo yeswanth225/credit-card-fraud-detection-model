@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT --workers 2
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
@@ -12,6 +12,10 @@ services:
         value: production
       - key: CORS_ORIGINS
         value: https://*.vercel.app
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fraud-db
+          property: connectionString
 
 databases:
   - name: fraud-db
