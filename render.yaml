@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: fraud-detection-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT --workers 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: APP_ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: https://*.vercel.app
+
+databases:
+  - name: fraud-db
+    databaseName: fraud_db
+    plan: free

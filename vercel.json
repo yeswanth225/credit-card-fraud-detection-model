@@ -1,21 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/api/main.py",
-      "use": "@vercel/python"
-    }
-  ],
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "src/api/main.py"
+      "src": "^/(.*)$",
+      "destination": "/index.html"
     }
   ],
   "env": {
-    "DATABASE_URL": "@database_url",
-    "API_HOST": "0.0.0.0",
-    "API_PORT": "8000",
-    "CORS_ORIGINS": "https://*.vercel.app,https://yourdomain.com"
+    "VITE_API_URL": "@vite_api_url"
   }
 }
