@@ -38,8 +38,8 @@ export function renderNotifications(ctx) {
                 <div class="empty-state-desc">Transactions exceeding risk thresholds will automatically trigger incident tickets here.</div>
               </div>
             ` : `
-              <div class="notifications-list" id="notif-list">
-                ${notifs.map(n => notifItemHTML(n)).join('')}
+              <div class="alert-list" id="notif-list">
+                ${notifs.map(n => alertItemHTML(n)).join('')}
               </div>
             `}
           </div>
@@ -52,29 +52,66 @@ export function renderNotifications(ctx) {
   mountNotifActions(notifs, ctx);
 }
 
-function notifItemHTML(n) {
-  const isHigh = n.riskLevel === 'high';
+function alertItemHTML(n) {
+  const isHigh   = n.riskLevel === 'high';
+  const isMedium = n.riskLevel === 'medium';
+  const isLow    = n.riskLevel === 'low';
+
+  const sevClass  = isHigh ? 'sev-high' : isMedium ? 'sev-medium' : isLow ? 'sev-low' : 'sev-info';
+  const cardClass = isHigh ? 'alert-high' : isMedium ? 'alert-medium' : isLow ? 'alert-low' : 'alert-info';
+
+  const iconName  = isHigh ? 'alertTriangle' : isMedium ? 'alertTriangle' : 'info';
+  const iconSize  = 16;
+
+  // Extract a clean title from the message prefix
+  const titleMap = { high: 'High Risk Alert', medium: 'Medium Risk Alert', low: 'Low Risk', info: 'Alert' };
+  const title = titleMap[n.riskLevel] || 'Alert';
+
+  // Strip the prefix from message for the description line
+  const prefixPattern = /^(High Risk Alert|Medium Risk Alert|High Risk|Medium Risk|Low Risk):\s*/i;
+  const description = esc(n.message.replace(prefixPattern, ''));
+
+  // Extract amount from message if present (e.g. ₹1,23,456.00)
+  const amountMatch = n.message.match(/₹[\d,]+\.?\d*/);
+  const amountDisplay = amountMatch ? amountMatch[0] : null;
+
+  // Severity badge label
+  const badgeClass = isHigh ? 'badge-high' : isMedium ? 'badge-medium' : 'badge-low';
+  const badgeLabel = isHigh ? 'HIGH RISK' : isMedium ? 'MEDIUM RISK' : 'LOW RISK';
+
   return `
-    <div class="notif-item${n.read ? '' : ' unread'}" data-notif-id="${n.id}" data-tx-id="${n.transactionId}">
-      <div class="notif-body">
-        <div class="notif-message">
-          ${isHigh ? icon('alertTriangle', { size: 13, className: 'text-high' }) : icon('info', { size: 13 })}
-          ${esc(n.message)}
+    <div class="alert-item ${cardClass}${n.read ? '' : ' unread'}" data-notif-id="${n.id}" data-tx-id="${n.transactionId || ''}">
+      ${!n.read ? '<span class="alert-unread-dot" title="Unread"></span>' : ''}
+
+      <div class="alert-severity-icon ${sevClass}">
+        ${icon(iconName, { size: iconSize })}
+      </div>
+
+      <div class="alert-body">
+        <div class="alert-title-row">
+          <span class="alert-title">${title}</span>
+          <span class="badge ${badgeClass}" style="font-size:10px;padding:1px 6px">${badgeLabel}</span>
         </div>
-        <div class="notif-time" style="display:flex;gap:12px;align-items:center;margin-top:6px">
-          <span>${formatRelative(n.createdAt)}</span>
-          ${n.transactionId ? `
-            <a href="#/transaction/${n.transactionId}"
-              class="btn btn-ghost btn-sm"
-              style="padding:1px 6px;height:auto;font-size:10px"
-              onclick="event.stopPropagation()">
-              Audit Record ${icon('chevronRight', { size: 9 })}
-            </a>` : ''}
+        <div class="alert-message" title="${esc(n.message)}">${description}</div>
+        <div class="alert-meta">
+          <span class="alert-time">
+            ${icon('clock', { size: 11 })}
+            ${formatRelative(n.createdAt)}
+          </span>
+          ${amountDisplay ? `<span class="alert-amount">${esc(amountDisplay)}</span>` : ''}
         </div>
       </div>
-      <span class="badge badge-${n.riskLevel === 'high' ? 'high' : n.riskLevel === 'medium' ? 'medium' : 'neutral'}" style="flex-shrink:0">
-        ${n.riskLevel === 'high' ? 'High Risk' : n.riskLevel === 'medium' ? 'Medium Risk' : 'Info'}
-      </span>
+
+      <div class="alert-actions">
+        ${n.transactionId ? `
+          <a href="#/transaction/${n.transactionId}"
+            class="btn btn-secondary btn-sm"
+            style="font-size:11px;display:flex;align-items:center;gap:4px"
+            onclick="event.stopPropagation()">
+            Audit Record ${icon('chevronRight', { size: 10 })}
+          </a>` : ''}
+        ${!n.read ? `<span style="font-size:10px;color:var(--c-text-3);font-family:var(--font-mono)">Click to mark read</span>` : `<span style="font-size:10px;color:var(--c-text-3)">Reviewed</span>`}
+      </div>
     </div>`;
 }
 
@@ -88,7 +125,7 @@ function mountNotifActions(notifs, ctx) {
     renderNotifications(ctx);
   });
 
-  document.querySelectorAll('.notif-item').forEach(item => {
+  document.querySelectorAll('.alert-item').forEach(item => {
     item.addEventListener('click', e => {
       if (e.target.closest('a')) return;
       const notifId = item.dataset.notifId;
@@ -112,3 +149,4 @@ function formatRelative(isoStr) {
 }
 
 function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
