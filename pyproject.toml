@@ -55,3 +55,6 @@ select = ["E", "F", "W", "I"]
 pythonpath = ["."]  # ensures src/ and phase2/ are importable from project root
 testpaths = ["tests"]
 asyncio_mode = "strict"
+
+[tool.vercel]
+entrypoint = "src.api.main:app"

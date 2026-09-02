@@ -1,0 +1,68 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.Python
+env/
+venv/
+*.egg
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+tests/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/raw/*.csv
+data/processed/*.parquet
+data/processed/*.joblib
+
+# Documentation (keep only API docs)
+docs/
+*.md
+!FASTAPI_DOCUMENTATION.md
+
+# Notebooks
+notebooks/
+
+# Phase 1/2 experiments (not needed for API)
+phase1/
+phase2/
+scripts/
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Temp files
+*.tmp
+*.temp
+.claude/
