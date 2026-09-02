@@ -1,7 +1,8 @@
 """Analyst-facing endpoints for viewing transactions and explanations."""
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+from sqlalchemy.orm import Session
 import numpy as np
 import pandas as pd
 import joblib
@@ -9,6 +10,10 @@ import shap
 import json
 import warnings
 from pathlib import Path
+from datetime import datetime
+
+from ..database.connection import get_db
+from ..database.models import Transaction, TransactionStatus
 
 router = APIRouter()
 
@@ -128,6 +133,9 @@ class TransactionDetail(BaseModel):
     confidence: float
     shap_values: List[SHAPValue]
     explanation: str
+    database_id: Optional[int] = None
+    analyst_notes: Optional[str] = None
+    reviewed_at: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -153,6 +161,8 @@ class TransactionListItem(BaseModel):
     timestamp: str
     fraud_score: float
     status: str
+    reviewed: bool = False
+    analyst_notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -163,53 +173,100 @@ async def list_transactions(
     limit: int = Query(50, ge=1, le=500),
     skip: int = Query(0, ge=0),
     status: Optional[str] = None,
+    db: Session = Depends(get_db),
 ):
-    """List transactions for review."""
+    """
+    List transactions for review.
+
+    Can be filtered by status (pending, approved, rejected, fraud).
+    Returns both database transactions and reference dataset transactions.
+    """
     data = get_model_data()
     X_test = data["X_test"]
     test_df = data["test_df"]
     y_pred_proba = data["y_pred_proba"]
 
+    # Get database transactions first
+    db_query = db.query(Transaction)
+    if status and status != "all":
+        status_enum = TransactionStatus[status.upper()] if status.upper() in TransactionStatus.__members__ else None
+        if status_enum:
+            db_query = db_query.filter(Transaction.status == status_enum)
+
+    db_transactions = db_query.order_by(Transaction.created_at.desc()).limit(limit).all()
+
     transactions = []
-    total_len = len(X_test)
-    start_idx = skip
-    end_idx = min(start_idx + limit * 3 if status else start_idx + limit, total_len)
 
-    for idx in range(start_idx, total_len):
-        if len(transactions) >= limit:
-            break
-
-        row = test_df.iloc[idx]
-        amount = row.get("Amount", 100.0)
-        fraud_score = float(y_pred_proba[idx])
-
-        if fraud_score >= 0.7:
-            tx_status = "fraud"
-        elif fraud_score <= 0.3:
-            tx_status = "clear"
-        else:
-            tx_status = "pending"
+    # Add database transactions
+    for tx in db_transactions:
+        fraud_score = tx.fraud_probability_classical or 0.5
+        tx_status = "fraud" if tx.is_fraud_classical else "clear"
 
         if status and tx_status != status:
             continue
 
         transactions.append(
             TransactionListItem(
-                id=f"TXN-{idx:06d}",
-                merchant=f"Merchant {idx}",
-                amount=float(amount),
-                timestamp=f"2026-08-21 {10 + (idx % 12):02d}:{idx % 60:02d}",
+                id=tx.transaction_id,
+                merchant=f"Merchant {tx.id}",
+                amount=float(tx.amount),
+                timestamp=tx.created_at.isoformat() if tx.created_at else "—",
                 fraud_score=fraud_score,
                 status=tx_status,
+                reviewed=tx.reviewed,
+                analyst_notes=tx.analyst_notes,
             )
         )
+
+    # Add reference dataset transactions if we need more
+    if len(transactions) < limit:
+        remaining = limit - len(transactions)
+        total_len = len(X_test)
+        start_idx = skip
+        end_idx = min(start_idx + remaining * 3 if status else start_idx + remaining, total_len)
+
+        for idx in range(start_idx, end_idx):
+            if len(transactions) >= limit:
+                break
+
+            row = test_df.iloc[idx]
+            amount = row.get("Amount", 100.0)
+            fraud_score = float(y_pred_proba[idx])
+
+            if fraud_score >= 0.7:
+                tx_status = "fraud"
+            elif fraud_score <= 0.3:
+                tx_status = "clear"
+            else:
+                tx_status = "pending"
+
+            if status and tx_status != status:
+                continue
+
+            transactions.append(
+                TransactionListItem(
+                    id=f"TXN-{idx:06d}",
+                    merchant=f"Merchant {idx}",
+                    amount=float(amount),
+                    timestamp=f"2026-08-21 {10 + (idx % 12):02d}:{idx % 60:02d}",
+                    fraud_score=fraud_score,
+                    status=tx_status,
+                )
+            )
 
     return transactions
 
 
 @router.get("/transactions/{transaction_id}", response_model=TransactionDetail)
-async def get_transaction(transaction_id: str):
-    """Get detailed information about a transaction with SHAP explanation."""
+async def get_transaction(
+    transaction_id: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Get detailed information about a transaction with SHAP explanation.
+
+    Checks database first, then falls back to reference dataset.
+    """
     data = get_model_data()
     X_test = data["X_test"]
     test_df = data["test_df"]
@@ -217,7 +274,72 @@ async def get_transaction(transaction_id: str):
     scaler = data["scaler"]
     y_pred_proba_all = data["y_pred_proba"]
 
-    # Flexible ID parsing
+    # Try to find in database
+    db_tx = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+
+    if db_tx:
+        # Build features from stored data
+        features = db_tx.features or {}
+        feature_cols = [f"V{i}" for i in range(1, 29)] + ["Time", "Amount"]
+        row_vals = [features.get(col, 0.0) for col in feature_cols]
+        X_row_vals = np.array(row_vals).reshape(1, -1)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            X_row_scaled = scaler.transform(X_row_vals)
+
+        y_pred_proba = db_tx.fraud_probability_classical or 0.5
+        is_fraud = db_tx.is_fraud_classical or False
+
+        # Compute SHAP values
+        if data["explainer"] is None:
+            data["explainer"] = shap.TreeExplainer(model)
+        explainer = data["explainer"]
+
+        shap_values = explainer.shap_values(X_row_scaled)
+        base_value = explainer.expected_value
+
+        if isinstance(shap_values, list):
+            shap_values = shap_values[1]
+        if hasattr(shap_values, "ndim") and shap_values.ndim == 2:
+            shap_vals = shap_values[0]
+        else:
+            shap_vals = np.array(shap_values).flatten()
+
+        if isinstance(base_value, (list, np.ndarray)):
+            bv = float(base_value[-1])
+        else:
+            bv = float(base_value)
+
+        feature_names = feature_cols
+        top_indices = np.argsort(np.abs(shap_vals))[-10:][::-1]
+        shap_features = [
+            SHAPValue(
+                feature=feature_names[i],
+                value=float(shap_vals[i]),
+                base_value=bv,
+            )
+            for i in top_indices
+        ]
+
+        explanation = f"The model predicts {'fraud' if is_fraud else 'legitimate'} based primarily on {feature_names[top_indices[0]]} {'increasing' if shap_vals[top_indices[0]] > 0 else 'decreasing'} the fraud score."
+
+        return TransactionDetail(
+            id=transaction_id,
+            amount=float(db_tx.amount),
+            timestamp=db_tx.created_at.isoformat() if db_tx.created_at else "—",
+            features=features,
+            model_verdict="fraud" if is_fraud else "clear",
+            fraud_probability=y_pred_proba,
+            confidence=float(max(y_pred_proba, 1.0 - y_pred_proba)),
+            shap_values=shap_features,
+            explanation=explanation,
+            database_id=db_tx.id,
+            analyst_notes=db_tx.analyst_notes,
+            reviewed_at=db_tx.reviewed_at.isoformat() if db_tx.reviewed_at else None,
+        )
+
+    # Fall back to reference dataset
     try:
         if "-" in transaction_id:
             idx = int(transaction_id.split("-")[-1])
@@ -368,10 +490,64 @@ async def get_metrics():
 
 
 @router.post("/review/{transaction_id}")
-async def review_transaction(transaction_id: str, action: str, notes: str = ""):
-    """Review and take action on a transaction."""
-    return {
-        "transaction_id": transaction_id,
-        "action": action,
-        "notes": notes,
-    }
+async def review_transaction(
+    transaction_id: str,
+    action: str = Query(..., description="approve, reject, or flag"),
+    notes: str = Query("", description="Analyst notes"),
+    db: Session = Depends(get_db),
+):
+    """
+    Review and take action on a transaction.
+
+    Records analyst decision in database for audit trail.
+    """
+    try:
+        # Find or create transaction in database
+        tx = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+
+        if not tx:
+            # Create entry for reference dataset transaction
+            try:
+                idx = int(transaction_id.split("-")[-1]) if "-" in transaction_id else int(transaction_id)
+                data = get_model_data()
+                if idx < len(data["y_pred_proba"]):
+                    prob = float(data["y_pred_proba"][idx])
+                    tx = Transaction(
+                        transaction_id=transaction_id,
+                        amount=100.0,
+                        time_delta=0.0,
+                        features={},
+                        is_fraud_classical=prob >= 0.7,
+                        fraud_probability_classical=prob,
+                        model_version_classical="xgb_v1",
+                    )
+                    db.add(tx)
+            except:
+                pass
+
+        if tx:
+            # Update status based on action
+            if action == "approve":
+                tx.status = TransactionStatus.APPROVED
+            elif action == "reject":
+                tx.status = TransactionStatus.REJECTED
+            elif action == "flag":
+                tx.status = TransactionStatus.PENDING
+            else:
+                raise HTTPException(status_code=400, detail="Invalid action")
+
+            tx.reviewed = True
+            tx.analyst_notes = notes
+            tx.reviewed_at = datetime.utcnow()
+
+            db.commit()
+
+        return {
+            "transaction_id": transaction_id,
+            "action": action,
+            "notes": notes,
+            "status": "success",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
