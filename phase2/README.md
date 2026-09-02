@@ -82,7 +82,13 @@ python -m phase2.experiments.phase2_benchmark_real --quick-test
 python -m phase2.experiments.phase2_benchmark_real --max-train-samples 400 --max-val-samples 200 --max-test-samples 800
 ```
 
-### 3. CLI Arguments
+### 3. Authoritative Final Benchmark Mode
+```powershell
+python -m phase2.experiments.phase2_benchmark_real --final
+```
+
+### 4. CLI Arguments
+- `--final`: Run authoritative benchmark (train=400, val=200, test=1000).
 - `--max-train-samples <int>`: Quantum training subset size (balanced 50/50). Default: `300`.
 - `--max-val-samples <int>`: Validation subset size for threshold tuning. Default: `150`.
 - `--max-test-samples <int>`: Unbalanced test subset size preserving ~0.17% fraud rate. Default: `600`.
@@ -91,7 +97,7 @@ python -m phase2.experiments.phase2_benchmark_real --max-train-samples 400 --max
 - `--skip-vqc`: Skip VQC execution.
 - `--quick-test`: Run ultra-fast 40-sample sanity validation.
 
-### 4. Educational Toy Experiment (Sanity Check)
+### 5. Educational Toy Experiment (Sanity Check)
 ```powershell
 python -m phase2.experiments.toy_qml_experiment
 ```
@@ -104,6 +110,7 @@ python -m phase2.experiments.toy_qml_experiment
 Running the real benchmark automatically generates:
 
 ### Data Artifacts (`phase2/results/`)
+- `FINAL_REPORT.md`: Comprehensive scientific summary of dataset, models, metrics, and runtime.
 - `phase2_benchmark_real.json`: Full metrics, confusion matrices, timestamps, and split metadata.
 - `phase2_metrics.csv`: Tabular CSV of all 4 models.
 - `phase2_feature_selection.json`: Selected top 4 features, ranking scores, and mathematical rationale.
@@ -114,7 +121,9 @@ Running the real benchmark automatically generates:
 3. **`model_comparison_bar.png`**: Side-by-side bar chart of PR-AUC, ROC-AUC, and F1-score.
 4. **`feature_importance_top4.png`**: XGBoost feature importance ranking highlighting selected qubits.
 5. **`confusion_matrices.png`**: Subplot matrix of TP, TN, FP, FN for evaluated models.
-6. **`quantum_circuit_diagram.png`**: Gate-level diagram of the 4-qubit quantum circuit.
+6. **`computational_cost_comparison.png`**: Training runtime and inference latency analysis.
+7. **`class_distribution.png`**: Linear and logarithmic visualizations of the 0.1727% fraud imbalance.
+8. **`quantum_circuit_diagram.png`**: Gate-level diagram of the 4-qubit quantum circuit.
 
 ---
 
@@ -143,8 +152,10 @@ phase2/
 │   └── phase2_benchmark.py            Legacy 100-sample benchmark
 │
 └── results/
+    ├── FINAL_REPORT.md                Comprehensive benchmark analysis report
     ├── phase2_benchmark_real.json     Real-dataset benchmark metrics
     ├── phase2_metrics.csv             Model comparison table
     ├── phase2_feature_selection.json  Top 4 feature selection metadata
-    └── plots/                         6 benchmark plots (PR, ROC, CM, Circuit, etc.)
+    └── plots/                         8 benchmark plots (PR, ROC, CM, Cost, Dist, Circuit)
 ```
+
