@@ -1,43 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>cred ai — Financial Fraud Intelligence</title>
-  <meta name="description"
-    content="Production-grade explainable credit card fraud detection and risk intelligence using hybrid Classical and Quantum ML models.">
-
-  <!-- Google Fonts: Inter and JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
-
-  <!-- CSS Base & Layout -->
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <!-- Per-Screen CSS -->
-  <link rel="stylesheet" href="css/screens.css">
-
-  <!-- jsPDF for PDF exports -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- App Entry -->
-  <script type="module" src="js/app.js"></script>
-</head>
-
-<body>
-  <div id="app">
-    <!-- Initial Loading State -->
-    <div class="page-loading">
-      <div class="page-loading-spinner"></div>
-      <div style="font-weight:600;color:var(--c-text-1);font-family:var(--font-mono);letter-spacing:-0.02em">cred ai initializing...</div>
-    </div>
-  </div>
-</body>
-
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FraudShield</title>
+    <meta name="description" content="Credit card fraud prevention platform with real-time transaction monitoring and risk telemetry." />
+    <meta property="og:title" content="FraudShield" />
+    <meta property="og:description" content="Credit card fraud prevention platform with real-time transaction monitoring and risk telemetry." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#0A0A0B] text-[#EDEDED] antialiased selection:bg-[#6366F1]/30 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
+

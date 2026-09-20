@@ -1,0 +1,6 @@
+{
+  "name": "FraudShield",
+  "description": "Credit card fraud prevention platform with real-time transaction monitoring and risk telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
