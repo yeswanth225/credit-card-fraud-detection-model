@@ -3,9 +3,10 @@ import { Transaction, ConfirmationStep, TransactionStatus } from '../types';
 
 interface UseConfirmationManagerProps {
   onResolveTransaction: (txId: string, newStatus: TransactionStatus) => void;
+  onDenyTransaction?: (tx: Transaction) => void;
 }
 
-export function useConfirmationManager({ onResolveTransaction }: UseConfirmationManagerProps) {
+export function useConfirmationManager({ onResolveTransaction, onDenyTransaction }: UseConfirmationManagerProps) {
   const [activeTx, setActiveTx] = useState<Transaction | null>(null);
   const [step, setStep] = useState<ConfirmationStep>('idle');
   const [secondsRemaining, setSecondsRemaining] = useState<number>(30);
@@ -61,14 +62,19 @@ export function useConfirmationManager({ onResolveTransaction }: UseConfirmation
   // Handle Deny action
   const handleDeny = useCallback(() => {
     if (!activeTx || step !== 'pending') return;
+    const deniedTx = activeTx;
     setStep('declined');
     setIsModalOpen(true); // show modal with resolution state
 
     dismissTimerRef.current = setTimeout(() => {
-      const txId = activeTx.id;
+      const txId = deniedTx.id;
       onResolveTransaction(txId, 'declined');
       setHighlightedTxId(txId);
       setHighlightedOutcome('declined');
+
+      if (onDenyTransaction) {
+        onDenyTransaction(deniedTx);
+      }
 
       setTimeout(() => setHighlightedTxId(null), 3200);
 
@@ -76,7 +82,7 @@ export function useConfirmationManager({ onResolveTransaction }: UseConfirmation
       setActiveTx(null);
       setStep('idle');
     }, 1500);
-  }, [activeTx, step, onResolveTransaction]);
+  }, [activeTx, step, onResolveTransaction, onDenyTransaction]);
 
   // Countdown effect while in 'pending' state
   useEffect(() => {

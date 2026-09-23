@@ -158,22 +158,20 @@ With 0.17% fraud rate, a model predicting "all legitimate" achieves **99.83% acc
 
 ### Threshold Selection
 
-Default threshold: **0.50**. In production, threshold should be tuned based on:
-- Cost of false negatives (missed fraud, customer loss)
-- Cost of false positives (blocked legitimate transactions, customer friction)
+Canonical production threshold: **0.70**.
 
-Typical production threshold: **0.30–0.40** (higher recall, lower precision)
+> [!NOTE]
+> The Phase 1 decision threshold of 0.70 was selected by F1 optimization on the held-out test partition used in the original experiment. Consequently, threshold-dependent metrics reported for that experiment should be interpreted as post-hoc test-set results rather than an independent validation-selected final evaluation.
 
 ---
 
 ## Model Artifacts
 
 ```
-src/models/
-├── xgboost_fraud.pkl       ← Trained XGBoost classifier
-├── scaler.pkl              ← StandardScaler fitted on training data
-├── feature_names.json      ← Feature list in correct order
-└── model_metadata.json     ← Training date, version, metrics
+phase1/data/
+├── xgboost_model.joblib    ← Canonical Phase 1 production XGBoost classifier (30 features)
+├── scaler.joblib           ← Canonical StandardScaler fitted on 30 features
+└── classical_model.joblib  ← Legacy/research training demo artifact (non-production)
 ```
 
 ---

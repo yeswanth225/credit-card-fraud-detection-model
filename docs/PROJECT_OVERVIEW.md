@@ -36,15 +36,14 @@ Classical ML Pipeline          Quantum ML Pipeline (Phase 2)
 The core model is a trained XGBoost classifier.
 
 - **Input:** 30 features (V1–V28 PCA components + Time + Amount)
-- **Training data:** 170,883 transactions (60% of dataset, stratified)
-- **Output:** Fraud probability (0–1) + binary classification at threshold 0.85
+- **Training data:** 227,845 transactions (80% of European fraud dataset)
+- **Output:** Fraud probability (0–1) + binary classification at canonical threshold 0.70
 - **Explainability:** SHAP values computed per prediction
 
 **Files:**
-- `src/ml/classical_model.py` — XGBoost classifier class, training, inference, SHAP
-- `src/ml/data_preprocessor.py` — Feature scaling, SMOTE, train/val/test splits
-- `data/processed/xgboost_model.joblib` — Trained model artifact
-- `data/processed/scaler.joblib` — Fitted StandardScaler
+- `src/ml/classical_model.py` — Legacy/research XGBoost classifier demo
+- `phase1/data/xgboost_model.joblib` — Canonical trained Phase 1 production model artifact
+- `phase1/data/scaler.joblib` — Canonical fitted StandardScaler (30 features)
 
 ---
 
@@ -117,10 +116,10 @@ python -m phase2.experiments.phase2_benchmark_real --max-train-samples 300 --max
 **Backend** (`.env` in project root):
 ```env
 DATABASE_URL=sqlite:///./data/fraud_detection.db
-CLASSICAL_MODEL_PATH=data/processed/classical_model.joblib
+CLASSICAL_MODEL_PATH=phase1/data/xgboost_model.joblib
 RAW_DATA_PATH=data/raw/creditcard.csv
-PROCESSED_DATA_PATH=data/processed
-PREDICTION_THRESHOLD=0.5
+PROCESSED_DATA_PATH=phase1/data
+PREDICTION_THRESHOLD=0.70
 RANDOM_STATE=42
 QUANTUM_HARDWARE_AVAILABLE=false
 ```

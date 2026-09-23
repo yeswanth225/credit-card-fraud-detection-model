@@ -15,7 +15,7 @@ def test_health_endpoint(client):
     """Backend health check must return 200 and {'status': 'healthy'}."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    assert response.json()["status"] == "healthy"
 
 
 def test_root_endpoint(client):
@@ -88,7 +88,7 @@ def test_verification_model_info(client):
     assert response.status_code == 200
     data = response.json()
     assert "classical_model" in data
-    assert "quantum_model" in data
+    assert "quantum_models" in data or "quantum_model" in data
 
 
 def test_admin_benchmarks_endpoint(client):
@@ -97,4 +97,34 @@ def test_admin_benchmarks_endpoint(client):
     assert response.status_code == 200
     data = response.json()
     assert "conclusion" in data
+
+
+def test_analyst_transaction_detail_and_review(client):
+    """Verify GET transaction detail and POST review endpoints."""
+    # First get transaction list to obtain a valid ID
+    list_resp = client.get("/api/analyst/transactions?limit=5")
+    assert list_resp.status_code == 200
+    txns = list_resp.json()
+    assert len(txns) > 0
+    tx_id = txns[0]["id"]
+
+    # Test GET transaction detail
+    detail_resp = client.get(f"/api/analyst/transactions/{tx_id}")
+    assert detail_resp.status_code == 200
+    detail = detail_resp.json()
+    assert detail["id"] == tx_id
+    assert "fraud_probability" in detail
+    assert "model_verdict" in detail
+    assert "shap_values" in detail
+
+    # Test POST review action
+    review_resp = client.post(
+        f"/api/analyst/review/{tx_id}?action=approve&notes=Automated+test+approval"
+    )
+    assert review_resp.status_code == 200
+    review_data = review_resp.json()
+    assert review_data["status"] == "success"
+    assert review_data["action"] == "approve"
+    assert review_data["transaction_id"] == tx_id
+
 

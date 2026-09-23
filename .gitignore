@@ -70,3 +70,8 @@ Thumbs.db
 # Machine learning generated folders
 mlruns/
 runs/
+*.egg-info/
+.claude/
+.agents/
+.codex/
+skills-lock.json

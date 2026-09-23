@@ -20,7 +20,7 @@ export interface StatCardProps {
   icon?: LucideIcon;
   badge?: {
     text: string;
-    color: 'green' | 'amber' | 'indigo';
+    color: 'green' | 'rose' | 'indigo' | 'neutral' | 'amber';
     pulse?: boolean;
   };
 }
@@ -39,34 +39,31 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.45,
-        delay: index * 0.05,
+        duration: 0.35,
+        delay: index * 0.04,
         ease: [0.16, 1, 0.3, 1],
       }}
-      whileHover={{
-        y: -2,
-        borderColor: '#343440',
-        transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
-      }}
-      className="group relative flex flex-col justify-between rounded-xl bg-[#131316] border border-[#23232A] p-5 sm:p-6 transition-colors shadow-xs"
+      className="group relative flex flex-col justify-between rounded-xl bg-[#0A0A0C] border border-white/[0.06] hover:border-white/[0.12] p-5 sm:p-6 transition-colors overflow-hidden"
     >
       {/* Top row: Title and Icon/Badge */}
       <div className="flex items-center justify-between gap-3 mb-3">
-        <span className="text-xs font-medium text-[#9E9EA8] tracking-wider uppercase">
+        <span className="text-[11px] font-medium text-[#909099] tracking-wider uppercase">
           {title}
         </span>
         <div className="flex items-center gap-2">
           {badge && (
             <span
-              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                badge.color === 'amber'
-                  ? 'bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20'
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                badge.color === 'rose'
+                  ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20'
                   : badge.color === 'green'
-                  ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20'
-                  : 'bg-[#6366F1]/10 text-[#6366F1] border border-[#6366F1]/20'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : badge.color === 'indigo'
+                  ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
+                  : 'bg-white/5 text-white/90 border border-white/10'
               }`}
             >
               {badge.pulse && (
@@ -80,7 +77,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           )}
 
           {Icon && (
-            <div className="p-1.5 rounded-lg bg-[#18181D] text-[#848494] group-hover:text-[#EDEDED] transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/80 flex items-center justify-center">
               <Icon className="w-4 h-4" />
             </div>
           )}
@@ -88,7 +85,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       {/* Metric value with count up */}
-      <div className="flex items-baseline gap-2 mb-3">
+      <div className="flex items-baseline justify-between gap-2 mb-3">
         <CountUp
           end={value}
           prefix={prefix}
@@ -96,21 +93,14 @@ export const StatCard: React.FC<StatCardProps> = ({
           decimals={decimals}
           className="text-2xl sm:text-3xl font-bold font-heading text-white tracking-tight"
         />
-      </div>
-
-      {/* Bottom row: Subvalue and trend */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#1F1F26]">
-        {subValue && (
-          <span className="text-xs text-[#8E8EA0] truncate max-w-[190px]">
-            {subValue}
-          </span>
-        )}
 
         {trend && (
           <div className="flex items-center gap-1 text-xs">
             <span
-              className={`inline-flex items-center font-medium ${
-                trend.isGood ? 'text-[#22C55E]' : 'text-[#EF4444]'
+              className={`inline-flex items-center font-medium px-1.5 py-0.5 rounded-md ${
+                trend.isGood
+                  ? 'text-emerald-400 bg-emerald-500/10'
+                  : 'text-rose-400 bg-rose-500/10'
               }`}
             >
               {trend.direction === 'up' && <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.2]" />}
@@ -118,10 +108,22 @@ export const StatCard: React.FC<StatCardProps> = ({
               {trend.direction === 'neutral' && <Minus className="w-3.5 h-3.5 stroke-[2.2]" />}
               {trend.value}
             </span>
-            <span className="text-[#686878] text-[11px] font-mono">{trend.label}</span>
           </div>
+        )}
+      </div>
+
+      {/* Bottom row: Subvalue and label */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/[0.04]">
+        {subValue && (
+          <span className="text-xs text-[#909099] truncate">
+            {subValue}
+          </span>
+        )}
+        {trend && (
+          <span className="text-[#5E5E68] text-[11px] font-mono ml-auto">{trend.label}</span>
         )}
       </div>
     </motion.div>
   );
 };
+

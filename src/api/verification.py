@@ -1,11 +1,16 @@
 """Verification endpoint for processing new transactions with classical and quantum models."""
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 import numpy as np
 import warnings
 from .analyst import get_model_data
 from ..ml.quantum_model import predict_quantum, get_quantum_model_info
+from ..config import (
+    CLASSICAL_DECISION_THRESHOLD,
+    CANONICAL_FEATURE_NAMES,
+    CLASSICAL_MODEL_METADATA,
+)
 
 router = APIRouter()
 
@@ -25,8 +30,13 @@ class SHAPExplanation(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    """Prediction with explanations."""
+    """Prediction with explanations and standardized model metadata."""
     transaction_id: str
+    is_fraud: bool = Field(description="Fraud decision using canonical decision threshold")
+    fraud_probability: float = Field(description="Raw XGBoost predicted fraud probability score")
+    decision_threshold: float = Field(description="Production classical decision threshold")
+    prediction_certainty: float = Field(description="Distance from 0.50 decision boundary max(p, 1-p); not empirical confidence")
+    model: Dict[str, Any] = Field(description="Canonical model metadata")
     is_fraud_classical: bool
     fraud_probability_classical: float
     confidence_classical: float
@@ -68,7 +78,7 @@ async def predict(
         scaler = data["scaler"]
 
         # Build feature vector matching 30 features: V1-V28, Time, Amount
-        feature_cols = [f"V{i}" for i in range(1, 29)] + ["Time", "Amount"]
+        feature_cols = CANONICAL_FEATURE_NAMES
         row_vals = []
         for col in feature_cols:
             if col == "Time":
@@ -92,8 +102,9 @@ async def predict(
                 dmatrix = xgb.DMatrix(X_scaled)
                 prob_classical = float(model.predict(dmatrix)[0])
 
-        is_fraud_classical = prob_classical >= 0.70  # Phase 1 validated optimal threshold
-        confidence_classical = max(prob_classical, 1.0 - prob_classical)
+        is_fraud_classical = prob_classical >= CLASSICAL_DECISION_THRESHOLD
+        prediction_certainty = max(prob_classical, 1.0 - prob_classical)
+        confidence_classical = prediction_certainty
 
         # Feature contributions for classical model
         importances = getattr(model, "feature_importances_", None)
@@ -110,11 +121,13 @@ async def predict(
 
         explanation_classical = {
             "model": "XGBoost (30 Features)",
-            "threshold": 0.70,
+            "threshold": CLASSICAL_DECISION_THRESHOLD,
             "decision": "Fraudulent" if is_fraud_classical else "Legitimate",
-            "probability": prob_classical,
+            "fraud_probability": round(prob_classical, 6),
+            "probability": round(prob_classical, 6),
             "top_features": classical_features,
-            "confidence": confidence_classical,
+            "prediction_certainty": round(prediction_certainty, 4),
+            "confidence": round(confidence_classical, 4),
             "training_samples": 227845,
         }
 
@@ -142,12 +155,22 @@ async def predict(
         if model_agreement is False:
             recommendation = "⚠️ Model disagreement detected. Manual review recommended."
         elif is_fraud_classical:
-            recommendation = "🚨 BLOCK: High fraud confidence from classical model."
+            recommendation = "🚨 BLOCK: High fraud probability from classical model."
         else:
             recommendation = "✅ APPROVE: Transaction appears legitimate."
 
         return PredictionResponse(
             transaction_id=f"tx_{np.random.randint(100000, 999999)}",
+            is_fraud=is_fraud_classical,
+            fraud_probability=round(prob_classical, 4),
+            decision_threshold=CLASSICAL_DECISION_THRESHOLD,
+            prediction_certainty=round(prediction_certainty, 4),
+            model={
+                "name": "XGBoost",
+                "version": "phase1",
+                "features": len(feature_cols),
+                "threshold": CLASSICAL_DECISION_THRESHOLD,
+            },
             is_fraud_classical=is_fraud_classical,
             fraud_probability_classical=round(prob_classical, 4),
             confidence_classical=round(confidence_classical, 4),
@@ -215,7 +238,7 @@ async def get_model_info():
         "classical_model": {
             "type": "XGBoost (30 Features)",
             "version": "Phase 1 Production Baseline",
-            "threshold": 0.70,
+            "threshold": CLASSICAL_DECISION_THRESHOLD,
             "metrics": {
                 "pr_auc": 0.8716,
                 "roc_auc": 0.9692,
@@ -229,7 +252,7 @@ async def get_model_info():
         },
         "quantum_models": quantum_info,
         "features_selected": {
-            "classical": list(range(1, 29)) + ["Time", "Amount"],
+            "classical": CANONICAL_FEATURE_NAMES,
             "quantum": ["V14", "V4", "V12", "V8"],
         },
         "note": "Classical model uses full 30-feature pipeline. Quantum models use 4-feature subset on 4-qubit circuits.",

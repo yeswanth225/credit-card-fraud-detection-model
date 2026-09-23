@@ -78,6 +78,7 @@ export interface Transaction {
   currency: string;
   status: TransactionStatus;
   riskScore: number; // 0 to 100
+  rawFraudProbability?: number; // Raw XGBoost probability score [0.0, 1.0] from backend
   corroborationScore?: number; // 0 to 100
   decisionReasoning?: string;
   decisionChips?: ReasoningChip[];
@@ -108,13 +109,36 @@ export interface StatMetric {
   sparklineData?: number[];
 }
 
+export interface SecurityActivityEvent {
+  id: string;
+  timestamp: string;
+  formattedTime: string;
+  type:
+    | 'card_freeze'
+    | 'card_unfreeze'
+    | 'fraud_blocked'
+    | 'alert_resolved'
+    | 'category_blocked'
+    | 'category_unblocked'
+    | 'geo_locked'
+    | 'geo_unlocked'
+    | 'device_revoked'
+    | 'device_trusted';
+  title: string;
+  description: string;
+  severity: 'info' | 'warning' | 'critical' | 'success';
+}
+
 export type NavTab =
   | 'dashboard'
+  | 'card-security'
+  | 'fraud-alerts'
   | 'transactions'
-  | 'review-queue'
-  | 'notification-logs'
+  | 'security-center'
   | 'analytics'
-  | 'settings';
+  | 'settings'
+  | 'review-queue' // Backward-compatible alias
+  | 'notification-logs'; // Backward-compatible alias
 
 export type NotificationOutcome = 'Approved' | 'Denied' | 'Expired';
 

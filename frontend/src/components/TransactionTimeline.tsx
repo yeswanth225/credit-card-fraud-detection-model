@@ -17,24 +17,24 @@ export const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ events
   const lineAnimDuration = prefersReducedMotion.current ? 0 : Math.max(0.6, events.length * 0.15);
 
   return (
-    <div className="rounded-xl bg-[#131316] border border-[#22222B] p-5 sm:p-6 space-y-5">
+    <div className="rounded-2xl bg-[#0E0E12] border border-white/[0.04] p-5 sm:p-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
-            <Activity className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white">
+            <Activity className="w-4 h-4 text-white" />
           </div>
           <div>
             <h3 className="font-heading font-semibold text-sm text-white">
               Transaction Lifecycle Timeline
             </h3>
-            <p className="text-[11px] text-[#7A7A8E]">
-              Sub-millisecond execution pipeline trace & audit sequence
+            <p className="text-[11px] text-[#909099]">
+              Execution pipeline trace & audit sequence
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono text-[#8E8EA0] bg-[#17171E] px-2.5 py-0.5 rounded-full border border-[#262632]">
+        <span className="text-[11px] font-mono text-[#909099] bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/5">
           Event Stream
         </span>
       </div>
@@ -44,16 +44,16 @@ export const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ events
         {/* SVG Drawing Line */}
         <div className="absolute left-[13px] top-4 bottom-5 w-[2px] pointer-events-none">
           {/* Background track line */}
-          <div className="absolute inset-0 bg-[#22222C]" />
+          <div className="absolute inset-0 bg-white/10" />
 
-          {/* Animated drawing foreground line (150ms per segment) */}
+          {/* Animated drawing foreground line */}
           <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
             <motion.line
               x1="1"
               y1="0"
               x2="1"
               y2="100%"
-              stroke="#6366F1"
+              stroke="#FFFFFF"
               strokeWidth="2"
               strokeLinecap="round"
               initial={{ pathLength: prefersReducedMotion.current ? 1 : 0 }}
@@ -95,21 +95,21 @@ export const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ events
                 <div className="absolute -left-[27px] top-0.5 flex items-center justify-center">
                   {isInProgress ? (
                     <div className="relative flex h-5 w-5 items-center justify-center">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F59E0B] opacity-70" />
-                      <span className="relative flex h-4 w-4 rounded-full bg-[#181820] border-2 border-[#F59E0B] items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-70" />
+                      <span className="relative flex h-4 w-4 rounded-full bg-[#181820] border-2 border-amber-400 items-center justify-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                       </span>
                     </div>
                   ) : isFailed ? (
-                    <div className="w-5 h-5 rounded-full bg-[#EF4444]/20 border-2 border-[#EF4444] flex items-center justify-center text-[#EF4444]">
+                    <div className="w-5 h-5 rounded-full bg-red-500/10 border-2 border-red-500 flex items-center justify-center text-red-400">
                       <AlertCircle className="w-3 h-3" />
                     </div>
                   ) : isSkipped ? (
-                    <div className="w-5 h-5 rounded-full bg-[#15151B] border-2 border-[#363644] flex items-center justify-center text-[#6A6A7E]">
+                    <div className="w-5 h-5 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-[#909099]">
                       <Minus className="w-2.5 h-2.5 stroke-[2.5]" />
                     </div>
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-[#171720] border-2 border-[#6366F1] flex items-center justify-center text-[#6366F1]">
+                    <div className="w-5 h-5 rounded-full bg-[#0A0A0C] border-2 border-white flex items-center justify-center text-white">
                       <Check className="w-2.5 h-2.5 stroke-[3]" />
                     </div>
                   )}
@@ -151,7 +151,7 @@ export const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ events
                   {ev.subLabel && (
                     <p
                       className={`text-xs font-medium ${
-                        isSkipped ? 'text-[#7A7A8E] italic' : 'text-[#A5B4FC]'
+                        isSkipped ? 'text-[#5E5E68] italic' : 'text-white'
                       }`}
                     >
                       {ev.subLabel}
@@ -159,14 +159,14 @@ export const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ events
                   )}
 
                   {/* Supporting technical detail */}
-                  <p className="text-[11px] text-[#7C7C92] font-sans leading-relaxed">
+                  <p className="text-[11px] text-[#909099] font-sans leading-relaxed">
                     {ev.detail}
                   </p>
 
                   {ev.latencyMs && (
                     <div className="pt-0.5">
-                      <span className="text-[10px] font-mono text-[#5C5C70]">
-                        Processing step latency: +{ev.latencyMs}ms
+                      <span className="text-[10px] font-mono text-[#5E5E68]">
+                        Processing latency: +{ev.latencyMs}ms
                       </span>
                     </div>
                   )}

@@ -39,30 +39,30 @@ export const ExplainableDecisionTrail: React.FC<ExplainableDecisionTrailProps> =
   };
 
   return (
-    <div className="rounded-xl bg-[#131316] border border-[#22222B] p-5 space-y-4">
+    <div className="rounded-2xl bg-[#0E0E12] border border-white/[0.04] p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
-            <Sparkles className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
             <h3 className="font-heading font-semibold text-sm text-white">
               Why this decision
             </h3>
-            <p className="text-[11px] text-[#7A7A8E]">
+            <p className="text-[11px] text-[#5E5E68]">
               Deterministic policy rules and explainable ML attribution
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono text-[#828296] bg-[#17171E] px-2 py-0.5 rounded border border-[#252530]">
+        <span className="text-[10px] font-mono text-[#5E5E68] bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
           Attribution Engine
         </span>
       </div>
 
       {/* Plain Language Reasoning String */}
-      <div className="p-3.5 rounded-lg bg-[#181820] border border-[#262634] text-xs text-[#D8D8E6] leading-relaxed font-sans">
+      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-xs text-[#EDEDED] leading-relaxed font-sans">
         <span className="font-semibold text-white mr-1.5">Decision Summary:</span>
         {summary}
       </div>

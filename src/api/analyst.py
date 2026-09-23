@@ -14,6 +14,15 @@ from datetime import datetime
 
 from ..database.connection import get_db
 from ..database.models import Transaction, TransactionStatus
+from ..config import (
+    CLASSICAL_DECISION_THRESHOLD,
+    ANALYST_TRIAGE_CLEAR_THRESHOLD,
+    ANALYST_TRIAGE_FRAUD_THRESHOLD,
+    DEFAULT_DISPLAY_PROBABILITY,
+    CANONICAL_MODEL_PATH,
+    CANONICAL_SCALER_PATH,
+    CANONICAL_FEATURE_NAMES,
+)
 
 router = APIRouter()
 
@@ -24,20 +33,36 @@ _model_cache = {}
 def get_model_data():
     """Load model, scaler, and test data on first use."""
     if "model" not in _model_cache:
-        base_path = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
-
-        model_path = base_path / "xgboost_model.joblib"
+        model_path = CANONICAL_MODEL_PATH
         if not model_path.exists():
-            model_path = base_path / "classical_model.joblib"
+            fallback_processed = Path(__file__).resolve().parent.parent.parent / "data" / "processed" / "xgboost_model.joblib"
+            if fallback_processed.exists():
+                model_path = fallback_processed
+            else:
+                raise FileNotFoundError(
+                    f"Canonical Phase 1 production model artifact not found at {model_path}. "
+                    f"Silent fallback to legacy classical_model.joblib is strictly prohibited."
+                )
 
-        # Load model and scaler
+        scaler_path = CANONICAL_SCALER_PATH
+        if not scaler_path.exists():
+            fallback_scaler = Path(__file__).resolve().parent.parent.parent / "data" / "processed" / "scaler.joblib"
+            if fallback_scaler.exists():
+                scaler_path = fallback_scaler
+            else:
+                raise FileNotFoundError(
+                    f"Canonical Phase 1 production scaler artifact not found at {scaler_path}."
+                )
+
+        # Load canonical model and scaler
         model = joblib.load(model_path)
-        scaler = joblib.load(base_path / "scaler.joblib")
+        scaler = joblib.load(scaler_path)
         _model_cache["model"] = model
         _model_cache["scaler"] = scaler
 
         # Load dataset matching scaler's 30 features
-        feature_cols = [f"V{i}" for i in range(1, 29)] + ["Time", "Amount"]
+        feature_cols = CANONICAL_FEATURE_NAMES
+        base_path = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
         df_real_path = Path(__file__).resolve().parent.parent.parent / "data" / "raw" / "creditcard.csv"
 
         if df_real_path.exists():
@@ -201,7 +226,7 @@ async def list_transactions(
 
     # Add database transactions
     for tx in db_transactions:
-        fraud_score = tx.fraud_probability_classical or 0.5
+        fraud_score = tx.fraud_probability_classical if tx.fraud_probability_classical is not None else DEFAULT_DISPLAY_PROBABILITY
         tx_status = "fraud" if tx.is_fraud_classical else "clear"
 
         if status and tx_status != status:
@@ -235,9 +260,10 @@ async def list_transactions(
             amount = row.get("Amount", 100.0)
             fraud_score = float(y_pred_proba[idx])
 
-            if fraud_score >= 0.7:
+            # Categorize status according to analyst triage boundaries
+            if fraud_score >= ANALYST_TRIAGE_FRAUD_THRESHOLD:
                 tx_status = "fraud"
-            elif fraud_score <= 0.3:
+            elif fraud_score <= ANALYST_TRIAGE_CLEAR_THRESHOLD:
                 tx_status = "clear"
             else:
                 tx_status = "pending"
@@ -290,7 +316,7 @@ async def get_transaction(
             warnings.simplefilter("ignore")
             X_row_scaled = scaler.transform(X_row_vals)
 
-        y_pred_proba = db_tx.fraud_probability_classical or 0.5
+        y_pred_proba = db_tx.fraud_probability_classical if db_tx.fraud_probability_classical is not None else DEFAULT_DISPLAY_PROBABILITY
         is_fraud = db_tx.is_fraud_classical or False
 
         # Compute SHAP values
@@ -333,7 +359,7 @@ async def get_transaction(
             features=features,
             model_verdict="fraud" if is_fraud else "clear",
             fraud_probability=y_pred_proba,
-            confidence=float(max(y_pred_proba, 1.0 - y_pred_proba)),
+            confidence=float(max(y_pred_proba, 1.0 - y_pred_proba)),  # Prediction certainty (distance from 0.50 boundary)
             shap_values=shap_features,
             explanation=explanation,
             database_id=db_tx.id,
@@ -362,7 +388,7 @@ async def get_transaction(
         X_row_scaled = scaler.transform(X_row_vals)
 
     y_pred_proba = float(y_pred_proba_all[idx])
-    is_fraud = y_pred_proba >= 0.7
+    is_fraud = y_pred_proba >= CLASSICAL_DECISION_THRESHOLD
 
     # Lazy-load SHAP explainer
     if data["explainer"] is None:
@@ -413,7 +439,7 @@ async def get_transaction(
         features=features_dict,
         model_verdict="fraud" if is_fraud else "clear",
         fraud_probability=y_pred_proba,
-        confidence=float(max(y_pred_proba, 1.0 - y_pred_proba)),
+        confidence=float(max(y_pred_proba, 1.0 - y_pred_proba)),  # Prediction certainty (distance from 0.50 boundary)
         shap_values=shap_features,
         explanation=explanation,
     )
@@ -429,11 +455,11 @@ async def get_metrics():
         y_pred_proba = data["y_pred_proba"]
         metrics_json = data["metrics"]
 
-        y_pred = (y_pred_proba >= 0.7).astype(int)
+        y_pred = (y_pred_proba >= CLASSICAL_DECISION_THRESHOLD).astype(int)
 
-        # Confusion matrix
+        # Confusion matrix with explicit binary labels
         from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
-        cm = confusion_matrix(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
 
         # ROC curve
         fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
@@ -519,9 +545,10 @@ async def review_transaction(
                         amount=100.0,
                         time_delta=0.0,
                         features={},
-                        is_fraud_classical=prob >= 0.7,
+                        is_fraud_classical=prob >= CLASSICAL_DECISION_THRESHOLD,
                         fraud_probability_classical=prob,
                         model_version_classical="xgb_v1",
+                        updated_at=datetime.utcnow(),
                     )
                     db.add(tx)
             except:
@@ -541,6 +568,7 @@ async def review_transaction(
             tx.reviewed = True
             tx.analyst_notes = notes
             tx.reviewed_at = datetime.utcnow()
+            tx.updated_at = datetime.utcnow()
 
             db.commit()
 

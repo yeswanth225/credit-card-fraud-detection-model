@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion } from 'motion/react';
+import React from 'react';
 import { Layers, Laptop, MapPin, Clock, MousePointerClick } from 'lucide-react';
 import { CorroborationSignal } from '../types';
 
@@ -8,118 +7,74 @@ interface CorroborationBreakdownProps {
 }
 
 export const CorroborationBreakdown: React.FC<CorroborationBreakdownProps> = ({ signals }) => {
-  const [animated, setAnimated] = useState<boolean>(false);
-  const prefersReducedMotion = useRef<boolean>(false);
-
-  useEffect(() => {
-    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion.current) {
-      setAnimated(true);
-      return;
-    }
-
-    setAnimated(false);
-    const timer = setTimeout(() => {
-      setAnimated(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [signals]);
-
   const getSignalIcon = (name: string) => {
-    if (name.includes('Device')) return <Laptop className="w-3.5 h-3.5 text-[#6366F1]" />;
-    if (name.includes('Location')) return <MapPin className="w-3.5 h-3.5 text-[#6366F1]" />;
-    if (name.includes('Time')) return <Clock className="w-3.5 h-3.5 text-[#6366F1]" />;
-    return <MousePointerClick className="w-3.5 h-3.5 text-[#6366F1]" />;
+    if (name.includes('Device')) return <Laptop className="w-3.5 h-3.5 text-white" />;
+    if (name.includes('Location')) return <MapPin className="w-3.5 h-3.5 text-white" />;
+    if (name.includes('Time')) return <Clock className="w-3.5 h-3.5 text-white" />;
+    return <MousePointerClick className="w-3.5 h-3.5 text-white" />;
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return { bar: 'bg-[#22C55E]', text: 'text-[#22C55E]' };
-    if (score >= 35) return { bar: 'bg-[#F59E0B]', text: 'text-[#F59E0B]' };
-    return { bar: 'bg-[#EF4444]', text: 'text-[#EF4444]' };
+  const getScoreBadge = (score: number) => {
+    if (score >= 70) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+    if (score >= 35) return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+    return 'text-red-400 bg-red-500/10 border-red-500/20';
   };
 
   return (
-    <div className="rounded-xl bg-[#131316] border border-[#22222B] p-5 space-y-4">
+    <div className="rounded-2xl bg-[#0E0E12] border border-white/[0.04] p-5 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
-            <Layers className="w-4 h-4" />
+      <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white">
+            <Layers className="w-4 h-4 text-white" />
           </div>
           <div>
             <h3 className="font-heading font-semibold text-sm text-white">
               Corroboration Signal Breakdown
             </h3>
-            <p className="text-[11px] text-[#7A7A8E]">
-              Feature contribution weights for identity and session corroboration
+            <p className="text-[11px] text-[#909099]">
+              Confidence weights for identity and session corroboration
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono text-[#8E8EA0] bg-[#17171E] px-2 py-0.5 rounded border border-[#262632]">
+        <span className="text-[11px] font-mono text-[#909099] bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
           4 Sub-Gauges
         </span>
       </div>
 
-      {/* Signals List with Mini Animated Progress Bars */}
-      <div className="space-y-3 pt-1">
-        {signals.map((signal, index) => {
-          const colors = getScoreColor(signal.score);
+      {/* Signals List with Concise Numeric Indications */}
+      <div className="space-y-2.5">
+        {signals.map((signal) => {
+          const badgeStyle = getScoreBadge(signal.score);
           const icon = getSignalIcon(signal.name);
 
           return (
             <div
               key={signal.id}
-              className="p-3.5 rounded-lg bg-[#17171D] border border-[#23232E] space-y-2.5 transition-colors hover:border-[#2C2C3C]"
+              className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-between gap-3 hover:bg-white/[0.04] transition-colors"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-[#1F1F2A] text-white">
-                    {icon}
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-white font-heading">
-                      {signal.name}
-                    </span>
-                    <p className="text-[11px] text-[#868698] font-sans line-clamp-1">
-                      {signal.description}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0">
+                  {icon}
                 </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1F1F2A] text-[#9E9EB4] border border-[#2A2A3A]">
-                    Weight {signal.weight}
+                <div className="min-w-0">
+                  <span className="text-xs font-semibold text-white font-heading truncate block">
+                    {signal.name}
                   </span>
-                  <div className="text-right">
-                    <span className={`text-xs font-mono font-bold ${colors.text}`}>
-                      {signal.score}
-                    </span>
-                    <span className="text-[10px] text-[#6E6E80] font-mono">/100</span>
-                  </div>
+                  <p className="text-[11px] text-[#909099] truncate">
+                    {signal.description}
+                  </p>
                 </div>
               </div>
 
-              {/* Mini Animated Progress Bar */}
-              <div
-                className="w-full h-1.5 rounded-full bg-[#202028] overflow-hidden"
-                role="progressbar"
-                aria-valuenow={signal.score}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${signal.name} score: ${signal.score} out of 100`}
-              >
-                <motion.div
-                  className={`h-full rounded-full ${colors.bar}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: animated ? `${signal.score}%` : 0 }}
-                  transition={{
-                    duration: prefersReducedMotion.current ? 0 : 0.85,
-                    delay: prefersReducedMotion.current ? 0 : 0.25 + index * 0.12,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                />
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-white/5 text-[#909099] border border-white/5">
+                  Weight {signal.weight}
+                </span>
+                <span className={`text-xs font-mono font-semibold px-2 py-0.5 rounded-lg border ${badgeStyle}`}>
+                  {signal.score} / 100
+                </span>
               </div>
             </div>
           );

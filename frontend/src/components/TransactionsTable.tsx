@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Transaction, TransactionStatus } from '../types';
 import { StatusPill } from './StatusPill';
-import { RiskScoreBar } from './RiskScoreBar';
-import { ChevronRight, Filter, ShieldCheck, ArrowUpDown, Calendar } from 'lucide-react';
+import { ChevronRight, Filter, ShieldCheck, ArrowUpDown, Calendar, CreditCard, AlertCircle, RefreshCw } from 'lucide-react';
 import { formatINR } from '../utils/currencyFormatter';
 import { formatFullTime, formatDisplayDate, formatFullDate } from '../utils/dateUtils';
+import { getTransactionLocation } from '../utils/transactionEnricher';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -15,6 +15,10 @@ interface TransactionsTableProps {
   highlightedOutcome?: 'approved' | 'declined' | null;
   selectedDate?: Date | null;
   onClearDateFilter?: () => void;
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  dataMode?: 'demo' | 'live';
 }
 
 export const TransactionsTable: React.FC<TransactionsTableProps> = ({
@@ -25,22 +29,17 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   highlightedOutcome,
   selectedDate,
   onClearDateFilter,
+  isLoading = false,
+  error = null,
+  onRetry,
+  dataMode = 'demo',
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | TransactionStatus>('all');
-  const [sortBy, setSortBy] = useState<'time' | 'amount' | 'risk'>('time');
+  const [sortBy, setSortBy] = useState<'time' | 'amount'>('time');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const shouldReduceMotion = useReducedMotion();
 
-  // Prefers reduced motion
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  // Filter
+  // Filter logic
   const filtered = transactions.filter((tx) => {
     if (statusFilter !== 'all' && tx.status !== statusFilter) return false;
     if (searchFilter.trim()) {
@@ -55,20 +54,18 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
     return true;
   });
 
-  // Sort
+  // Sort logic
   const sorted = [...filtered].sort((a, b) => {
     let diff = 0;
     if (sortBy === 'time') {
       diff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     } else if (sortBy === 'amount') {
       diff = b.amount - a.amount;
-    } else if (sortBy === 'risk') {
-      diff = b.riskScore - a.riskScore;
     }
     return sortOrder === 'asc' ? -diff : diff;
   });
 
-  const toggleSort = (field: 'time' | 'amount' | 'risk') => {
+  const toggleSort = (field: 'time' | 'amount') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -78,56 +75,60 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   };
 
   return (
-    <div className="rounded-xl bg-[#131316] border border-[#23232A] overflow-hidden">
+    <div className="rounded-2xl bg-[#0A0A0C] border border-white/[0.04] overflow-hidden">
       {/* Table Header & Quick Filters */}
-      <div className="p-4 sm:p-5 border-b border-[#1F1F26] flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 border-b border-white/[0.04] flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-heading text-base font-semibold text-white tracking-tight">
-            Recent Transactions & Decision Stream
+            Transaction Activity Ledger
           </h2>
-          <p className="text-xs text-[#8A8A9C] mt-0.5">
-            Real-time feed evaluated against composite ML risk models
+          <p className="text-xs text-[#909099] mt-0.5">
+            Real-time feed with authorization status and instant details
           </p>
         </div>
 
         {/* Status Filter Buttons */}
-        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-[#0E0E11] border border-[#212128] text-xs">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/5 text-xs">
           <button
+            type="button"
             onClick={() => setStatusFilter('all')}
-            className={`px-2.5 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               statusFilter === 'all'
-                ? 'bg-[#1C1C24] text-white font-medium shadow-xs'
-                : 'text-[#828292] hover:text-white'
+                ? 'bg-white/10 text-white font-medium'
+                : 'text-[#909099] hover:text-white'
             }`}
           >
             All ({transactions.length})
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('approved')}
-            className={`px-2.5 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               statusFilter === 'approved'
-                ? 'bg-[#22C55E]/15 text-[#22C55E] font-medium'
-                : 'text-[#828292] hover:text-[#22C55E]'
+                ? 'bg-emerald-500/15 text-emerald-400 font-medium'
+                : 'text-[#909099] hover:text-emerald-400'
             }`}
           >
             Approved
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('step-up')}
-            className={`px-2.5 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               statusFilter === 'step-up'
-                ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-medium'
-                : 'text-[#828292] hover:text-[#F59E0B]'
+                ? 'bg-amber-500/15 text-amber-400 font-medium'
+                : 'text-[#909099] hover:text-amber-400'
             }`}
           >
-            Step-Up
+            Verification
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('declined')}
-            className={`px-2.5 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               statusFilter === 'declined'
-                ? 'bg-[#EF4444]/15 text-[#EF4444] font-medium'
-                : 'text-[#828292] hover:text-[#EF4444]'
+                ? 'bg-red-500/15 text-red-400 font-medium'
+                : 'text-[#909099] hover:text-red-400'
             }`}
           >
             Declined
@@ -135,207 +136,247 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
         </div>
       </div>
 
-      {/* Table Element */}
-      <div className="overflow-x-auto">
+      {/* 1. DESKTOP RICH TABLE (Visible >= 1024px) */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#1E1E26] bg-[#0F0F12] text-[11px] uppercase tracking-wider text-[#8E8EA2] font-semibold">
+            <tr className="border-b border-white/[0.04] bg-[#070709] text-[11px] uppercase tracking-wider text-[#909099] font-medium">
               <th
                 onClick={() => toggleSort('time')}
-                className="py-3 px-4 sm:px-5 font-medium cursor-pointer hover:text-white transition-colors focus-visible:ring-1 focus-visible:ring-[#6366F1]"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSort('time')}
-                aria-label={`Sort by time, currently ${sortBy === 'time' ? (sortOrder === 'desc' ? 'latest first' : 'earliest first') : 'unsorted'}`}
-                title="Toggle time sort: latest first or earliest first"
+                className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors"
               >
                 <div className="flex items-center gap-1.5">
-                  <span>Time</span>
-                  {sortBy === 'time' ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#818CF8] bg-[#6366F1]/10 px-1.5 py-0.5 rounded border border-[#6366F1]/20">
-                      <span>{sortOrder === 'desc' ? 'Latest' : 'Earliest'}</span>
-                      <ArrowUpDown className="w-2.5 h-2.5" />
-                    </span>
-                  ) : (
-                    <ArrowUpDown className="w-3 h-3 text-[#707084]" />
-                  )}
+                  <span>Timestamp</span>
+                  <ArrowUpDown className="w-3 h-3 text-[#5E5E68]" />
                 </div>
               </th>
-              <th className="py-3 px-4 sm:px-5 font-medium">Merchant & Category</th>
+              <th className="py-3.5 px-4 font-medium">Merchant & Category</th>
+              <th className="py-3.5 px-4 font-medium">Card & Location</th>
               <th
                 onClick={() => toggleSort('amount')}
-                className="py-3 px-4 sm:px-5 font-medium cursor-pointer hover:text-white transition-colors focus-visible:ring-1 focus-visible:ring-[#6366F1]"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSort('amount')}
-                aria-label="Sort by amount"
+                className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
               >
                 <div className="flex items-center gap-1.5">
                   <span>Amount</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#707084]" />
+                  <ArrowUpDown className="w-3 h-3 text-[#71717A]" />
                 </div>
               </th>
-              <th className="py-3 px-4 sm:px-5 font-medium">Status</th>
-              <th
-                onClick={() => toggleSort('risk')}
-                className="py-3 px-4 sm:px-5 font-medium cursor-pointer hover:text-white transition-colors focus-visible:ring-1 focus-visible:ring-[#6366F1]"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && toggleSort('risk')}
-                aria-label="Sort by risk score"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>Risk Score</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#707084]" />
-                </div>
-              </th>
-              <th className="py-3 px-4 sm:px-5 font-medium text-right">Action</th>
+              <th className="py-3 px-4 font-medium">Status</th>
+              <th className="py-3 px-4 text-right font-medium">Action</th>
             </tr>
           </thead>
 
-          <motion.tbody
-            key={selectedDate ? selectedDate.toISOString().slice(0, 10) : 'all-dates'}
-            initial={prefersReducedMotion ? false : { opacity: 0.3 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-            className="divide-y divide-[#1B1B22] text-xs"
-          >
-            {sorted.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-14 text-center">
-                  {selectedDate ? (
-                    <div className="max-w-sm mx-auto space-y-3">
-                      <div className="w-12 h-12 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/20 text-[#818CF8] flex items-center justify-center mx-auto">
-                        <Calendar className="w-6 h-6" />
+          <tbody className="divide-y divide-white/[0.06] text-xs">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={`loading-${i}`} className="animate-pulse">
+                  <td className="py-3.5 px-5">
+                    <div className="h-4 bg-white/5 rounded w-20 mb-1" />
+                    <div className="h-3 bg-white/5 rounded w-16" />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 shrink-0" />
+                      <div className="space-y-1">
+                        <div className="h-3.5 bg-white/5 rounded w-28" />
+                        <div className="h-3 bg-white/5 rounded w-20" />
                       </div>
-                      <h3 className="text-base font-semibold text-white">No transactions on this day</h3>
-                      <p className="text-xs text-[#8A8A9E] max-w-xs mx-auto">
-                        No card authorizations or telemetry events were recorded for {formatFullDate(selectedDate)}.
-                      </p>
-                      {onClearDateFilter && (
-                        <button
-                          type="button"
-                          onClick={onClearDateFilter}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181822] hover:bg-[#20202E] text-xs font-medium text-[#A5B4FC] border border-[#2B2B3D] transition-colors cursor-pointer"
-                        >
-                          <span>Show all dates</span>
-                        </button>
-                      )}
                     </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-[#9090A0]">No transactions found</p>
-                      <p className="text-xs text-[#606070]">No transactions match the selected criteria.</p>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="h-3.5 bg-white/5 rounded w-24 mb-1" />
+                    <div className="h-3 bg-white/5 rounded w-20" />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="h-4 bg-white/5 rounded w-16" />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="h-6 bg-white/5 rounded-full w-20" />
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <div className="h-4 w-4 bg-white/5 rounded inline-block" />
+                  </td>
+                </tr>
+              ))
+            ) : error ? (
+              <tr>
+                <td colSpan={6} className="py-12 px-6 text-center">
+                  <div className="max-w-md mx-auto flex flex-col items-center justify-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                      <AlertCircle className="w-5 h-5" />
                     </div>
-                  )}
+                    <div>
+                      <div className="text-white font-medium text-sm">Unable to load live transactions</div>
+                      <div className="text-xs text-[#909099] mt-1">{error}</div>
+                    </div>
+                    {onRetry && (
+                      <button
+                        type="button"
+                        onClick={onRetry}
+                        className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium transition-colors cursor-pointer border border-white/10"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Retry</span>
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : sorted.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-12 text-center text-[#71717A]">
+                  No transactions match your filter criteria.
                 </td>
               </tr>
             ) : (
               sorted.map((tx) => {
+                const location = getTransactionLocation(tx);
                 const isHighlighted = highlightedTxId === tx.id;
+
                 return (
-                  <motion.tr
+                  <tr
                     key={tx.id}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`View details for transaction ${tx.id} at ${tx.merchant.name}`}
                     onClick={() => onSelectTransaction(tx)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onSelectTransaction(tx);
-                      }
-                    }}
-                    animate={
-                      isHighlighted
-                        ? {
-                            backgroundColor:
-                              highlightedOutcome === 'approved'
-                                ? [
-                                    'rgba(34, 197, 94, 0.45)',
-                                    'rgba(34, 197, 94, 0.15)',
-                                    'rgba(24, 24, 31, 0)',
-                                  ]
-                                : [
-                                    'rgba(239, 68, 68, 0.45)',
-                                    'rgba(239, 68, 68, 0.15)',
-                                    'rgba(24, 24, 31, 0)',
-                                  ],
-                          }
-                        : undefined
-                    }
-                    transition={{ duration: 2.5, ease: 'easeOut' }}
-                    className={`group hover:bg-[#171720] cursor-pointer transition-colors duration-150 focus-visible:bg-[#171720] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#6366F1] ${
-                      isHighlighted ? 'ring-1 ring-inset ring-[#6366F1]/50' : ''
+                    className={`hover:bg-white/[0.02] transition-colors cursor-pointer border-b border-white/[0.02] ${
+                      isHighlighted ? 'bg-white/[0.05]' : ''
                     }`}
                   >
-                    {/* Time */}
-                    <td className="py-3.5 px-4 sm:px-5 whitespace-nowrap font-mono text-[#A2A2B2]">
-                      <div className="flex flex-col">
-                        <span className="text-white font-medium">
-                          {formatFullTime(tx.timestamp, tx.formattedTime)}
-                        </span>
-                        <span className="text-[10px] text-[#606070] flex items-center gap-1">
-                          <span>{tx.id}</span>
-                          {!selectedDate && (
-                            <span className="text-[#555566] font-sans">
-                              • {formatDisplayDate(new Date(tx.timestamp))}
-                            </span>
-                          )}
-                        </span>
+                    {/* Timestamp */}
+                    <td className="py-3.5 px-5 font-mono text-[#909099]">
+                      <div className="text-white font-medium text-xs">{tx.formattedTime}</div>
+                      <div className="text-[11px] text-[#5E5E68]">
+                        {formatDisplayDate(new Date(tx.timestamp))}
                       </div>
                     </td>
 
-                  {/* Merchant & Holder */}
-                  <td className="py-3.5 px-4 sm:px-5">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-white group-hover:text-[#818CF8] transition-colors">
-                        {tx.merchant.name}
-                      </span>
-                      <span className="text-[11px] text-[#7A7A8E] flex items-center gap-1.5 mt-0.5">
-                        <span className="font-mono text-[10px] text-[#8E8EA0]">{tx.cardholder.maskedCard}</span>
-                        <span className="text-[#4E4E60]">•</span>
-                        <span className="truncate max-w-[150px]">{tx.merchant.category}</span>
-                      </span>
-                    </div>
-                  </td>
+                    {/* Merchant & Category */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                          {tx.merchant.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-white truncate max-w-[180px] text-xs">
+                            {tx.merchant.name}
+                          </div>
+                          <div className="text-[11px] text-[#5E5E68] truncate max-w-[180px]">
+                            {tx.merchant.category}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
 
-                  {/* Amount */}
-                  <td className="py-3.5 px-4 sm:px-5 whitespace-nowrap font-mono">
-                    <span className="text-sm font-semibold text-white">
+                    {/* Card & Location */}
+                    <td className="py-3.5 px-4 text-[#909099]">
+                      <div className="font-mono text-white text-[11px]">
+                        {tx.cardholder.maskedCard}
+                      </div>
+                      <div className="text-[11px] text-[#5E5E68] truncate max-w-[150px]">
+                        {location.city}, {location.country}
+                      </div>
+                    </td>
+
+                    {/* Amount */}
+                    <td className="py-3.5 px-4 font-mono font-semibold text-white text-xs">
                       {formatINR(tx.amount)}
-                    </span>
-                  </td>
+                    </td>
 
-                  {/* Status Pill */}
-                  <td className="py-3.5 px-4 sm:px-5 whitespace-nowrap">
-                    <StatusPill status={tx.status} size="sm" pulse={tx.status === 'step-up'} />
-                  </td>
+                    {/* Status */}
+                    <td className="py-3.5 px-4">
+                      <StatusPill status={tx.status} />
+                    </td>
 
-                  {/* Risk Score Bar */}
-                  <td className="py-3.5 px-4 sm:px-5 whitespace-nowrap">
-                    <RiskScoreBar score={tx.riskScore} />
-                  </td>
-
-                  {/* Action */}
-                  <td className="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#88889A] group-hover:text-white transition-colors">
-                      Inspect
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#6366F1]" />
-                    </span>
-                  </td>
-                </motion.tr>
-              );
-            })
-          )}
-          </motion.tbody>
+                    {/* Chevron */}
+                    <td className="py-3.5 px-4 text-right">
+                      <ChevronRight className="w-4 h-4 text-[#5E5E68] inline-block" />
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
         </table>
       </div>
 
-      {/* Table Footer */}
-      <div className="px-4 py-3 bg-[#0F0F12] border-t border-[#1F1F26] flex items-center justify-between text-xs text-[#707080]">
-        <span>Showing {sorted.length} of {transactions.length} real-time authorizations</span>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[11px] text-[#88889A]">Median Risk: 19/100</span>
-          <span className="font-mono text-[11px] text-[#22C55E]">99.2% Auto-Approved</span>
-        </div>
+      {/* 2. MOBILE STACKED CARDS (Visible < 1024px) */}
+      <div className="block lg:hidden divide-y divide-white/[0.03]">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={`m-loading-${i}`} className="p-4 space-y-2.5 animate-pulse">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-white/5 shrink-0" />
+                  <div className="space-y-1">
+                    <div className="h-3.5 bg-white/5 rounded w-24" />
+                    <div className="h-3 bg-white/5 rounded w-16" />
+                  </div>
+                </div>
+                <div className="h-4 bg-white/5 rounded w-12" />
+              </div>
+            </div>
+          ))
+        ) : error ? (
+          <div className="p-6 text-center space-y-3">
+            <div className="w-9 h-9 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mx-auto">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <div className="text-xs text-white font-medium">Unable to load live transactions</div>
+            <div className="text-[11px] text-[#909099] max-w-xs mx-auto">{error}</div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Retry</span>
+              </button>
+            )}
+          </div>
+        ) : sorted.length === 0 ? (
+          <div className="p-8 text-center text-[#5E5E68] text-xs">
+            No transactions match your filter criteria.
+          </div>
+        ) : (
+          sorted.map((tx) => {
+            const location = getTransactionLocation(tx);
+            const isHighlighted = highlightedTxId === tx.id;
+
+            return (
+              <div
+                key={tx.id}
+                onClick={() => onSelectTransaction(tx)}
+                className={`p-4 hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer space-y-2.5 min-h-[64px] ${
+                  isHighlighted ? 'bg-white/[0.05]' : ''
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                      {tx.merchant.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-white text-xs truncate">
+                        {tx.merchant.name}
+                      </div>
+                      <div className="text-[11px] text-[#5E5E68] truncate">
+                        {location.city}, {location.country}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-mono font-semibold text-white text-xs">
+                      {formatINR(tx.amount)}
+                    </div>
+                    <div className="mt-1">
+                      <StatusPill status={tx.status} size="sm" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

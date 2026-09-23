@@ -132,7 +132,7 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
       <div className="grid grid-cols-2 gap-4 pt-1">
         {/* Risk Score Gauge */}
         <div
-          className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#17171D] border border-[#242430] relative overflow-hidden"
+          className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.04] relative overflow-hidden"
           role="meter"
           aria-valuenow={riskScore}
           aria-valuemin={0}
@@ -143,12 +143,6 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
           <span className="sr-only">Risk Score: {riskScore} out of 100. Status: {riskColor.label}</span>
 
           <div className="relative w-[136px] h-[136px] flex items-center justify-center">
-            {/* Ambient subtle glow ring */}
-            <div
-              className="absolute inset-0 rounded-full filter blur-xl opacity-30 pointer-events-none transition-colors duration-500"
-              style={{ backgroundColor: riskColor.stroke }}
-            />
-
             <svg
               className="w-full h-full transform -rotate-90"
               viewBox={`0 0 ${size} ${size}`}
@@ -160,7 +154,7 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke="#22222C"
+                stroke="#18181D"
                 strokeWidth={strokeWidth}
               />
               {/* Dynamic Animated Value Fill */}
@@ -186,15 +180,15 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
               >
                 {displayedRisk}
               </span>
-              <span className="text-[10px] font-mono text-[#8E8EA2] uppercase tracking-wider mt-0.5">
+              <span className="text-[10px] font-mono text-[#5E5E68] uppercase tracking-wider mt-0.5">
                 / 100
               </span>
             </div>
           </div>
 
           <div className="mt-3 text-center space-y-0.5">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
-              <ShieldAlert className="w-3.5 h-3.5 text-[#EF4444]" />
+            <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-white">
+              <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
               <span>Risk Score</span>
             </div>
             <p className="text-[11px] font-medium" style={{ color: riskColor.stroke }}>
@@ -205,7 +199,7 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
 
         {/* Corroboration Score Gauge */}
         <div
-          className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#17171D] border border-[#242430] relative overflow-hidden"
+          className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0E0E12] border border-white/[0.04] relative overflow-hidden"
           role="meter"
           aria-valuenow={corroborationScore}
           aria-valuemin={0}
@@ -216,12 +210,6 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
           <span className="sr-only">Corroboration Score: {corroborationScore} out of 100. Status: {corrobColor.label}</span>
 
           <div className="relative w-[136px] h-[136px] flex items-center justify-center">
-            {/* Ambient subtle glow ring */}
-            <div
-              className="absolute inset-0 rounded-full filter blur-xl opacity-30 pointer-events-none transition-colors duration-500"
-              style={{ backgroundColor: corrobColor.stroke }}
-            />
-
             <svg
               className="w-full h-full transform -rotate-90"
               viewBox={`0 0 ${size} ${size}`}
@@ -233,7 +221,7 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke="#22222C"
+                stroke="#18181D"
                 strokeWidth={strokeWidth}
               />
               {/* Dynamic Animated Value Fill */}
@@ -259,15 +247,15 @@ export const ScoreGauges: React.FC<ScoreGaugesProps> = ({
               >
                 {displayedCorroboration}
               </span>
-              <span className="text-[10px] font-mono text-[#8E8EA2] uppercase tracking-wider mt-0.5">
+              <span className="text-[10px] font-mono text-[#5E5E68] uppercase tracking-wider mt-0.5">
                 / 100
               </span>
             </div>
           </div>
 
           <div className="mt-3 text-center space-y-0.5">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
+            <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-white">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Corroboration</span>
             </div>
             <p className="text-[11px] font-medium" style={{ color: corrobColor.stroke }}>

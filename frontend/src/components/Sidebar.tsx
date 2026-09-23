@@ -3,14 +3,15 @@ import { NavTab } from '../types';
 import { MagneticButton } from './MagneticButton';
 import {
   LayoutDashboard,
-  ReceiptText,
+  CreditCard,
   ShieldAlert,
-  MessageSquareText,
+  ReceiptText,
+  Shield,
   BarChart3,
   Settings,
-  Shield,
-  Activity,
+  Lock,
   X,
+  Compass,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,6 +20,7 @@ interface SidebarProps {
   pendingCount: number;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  isCardFrozen?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -27,12 +29,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingCount,
   mobileOpen,
   onCloseMobile,
+  isCardFrozen = false,
 }) => {
-  const navItems: { id: NavTab; label: string; icon: React.ElementType; badge?: number }[] = [
+  const navItems: { id: NavTab; label: string; icon: React.ElementType; badge?: number; alertDot?: boolean }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'card-security', label: 'Card Security', icon: CreditCard, alertDot: isCardFrozen },
+    { id: 'fraud-alerts', label: 'Fraud Alerts', icon: ShieldAlert, badge: pendingCount },
     { id: 'transactions', label: 'Transactions', icon: ReceiptText },
-    { id: 'review-queue', label: 'Review Queue', icon: ShieldAlert, badge: pendingCount },
-    { id: 'notification-logs', label: 'Notification Logs', icon: MessageSquareText },
+    { id: 'security-center', label: 'Security Center', icon: Shield },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -48,21 +52,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {mobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-black/70 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/80 backdrop-blur-xs z-40 lg:hidden transition-opacity"
         />
       )}
 
       {/* Sidebar container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col justify-between bg-[#0E0E11] border-r border-[#23232A] transition-transform duration-300 ease-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col justify-between bg-[#0E0E12] border-r border-white/[0.08] transition-transform duration-300 ease-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
         <div>
-          <div className="h-16 flex items-center justify-between px-5 border-b border-[#1F1F26]">
+          <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.08]">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#6366F1]/15 text-[#6366F1] border border-[#6366F1]/30">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 border border-sky-400/30">
                 <Shield className="w-4.5 h-4.5 stroke-[2.2]" />
               </div>
               <div className="flex flex-col">
@@ -70,19 +74,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="font-heading text-base font-semibold tracking-tight text-white">
                     FraudShield
                   </span>
-                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-[#1C1C22] text-[#8C8CA0] border border-[#2B2B36]">
-                    Prod
+                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-[#181822] text-[#A1A1AA] border border-white/[0.08]">
+                    LIVE
                   </span>
                 </div>
-                <span className="text-[11px] text-[#6E6E80]">Card Risk Shield</span>
+                <span className="text-[11px] text-[#71717A]">Consumer Card Defense</span>
               </div>
             </div>
 
             {/* Mobile close button */}
             <button
+              type="button"
               onClick={onCloseMobile}
-              className="lg:hidden p-1.5 text-[#8E8EA0] hover:text-white rounded-lg hover:bg-[#18181D]"
-              aria-label="Close navigation"
+              className="lg:hidden p-1.5 text-[#A1A1AA] hover:text-white rounded-lg hover:bg-[#181822] cursor-pointer"
+              aria-label="Close navigation drawer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -92,52 +97,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <nav className="p-3 space-y-1 mt-2" aria-label="Main Navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentTab === item.id;
+              // Map backward-compatible aliases to match active tab
+              const isActive =
+                currentTab === item.id ||
+                (item.id === 'fraud-alerts' && currentTab === 'review-queue') ||
+                (item.id === 'security-center' && currentTab === 'notification-logs');
 
               return (
                 <MagneticButton
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   active={isActive}
-                  strength={5}
+                  strength={4}
                   scale={1.01}
                   className="w-full block"
                 >
                   <div
-                    className={`group relative flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm transition-colors duration-200 ${
+                    className={`group relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition-colors duration-200 cursor-pointer ${
                       isActive
-                        ? 'bg-[#181820] text-white font-medium shadow-xs border border-[#2B2B38]'
-                        : 'text-[#9E9EA8] hover:text-white hover:bg-[#131318]'
+                        ? 'bg-[#181822] text-white font-medium shadow-xs border border-white/[0.08]'
+                        : 'text-[#A1A1AA] hover:text-white hover:bg-[#13131A]'
                     }`}
                   >
-                    {/* Active Indigo Indicator Bar on Left */}
+                    {/* Active Indicator Bar on Left */}
                     {isActive && (
-                      <span className="absolute left-0 top-2 bottom-2 w-1 bg-[#6366F1] rounded-r-full" />
+                      <span className="absolute left-0 top-2 bottom-2 w-1 bg-[#38BDF8] rounded-r-full" />
                     )}
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Icon
-                        className={`w-4.5 h-4.5 transition-colors ${
+                        className={`w-4.5 h-4.5 transition-colors shrink-0 ${
                           isActive
-                            ? 'text-[#6366F1]'
-                            : 'text-[#7A7A8C] group-hover:text-[#EDEDED]'
+                            ? 'text-[#38BDF8]'
+                            : 'text-[#71717A] group-hover:text-white'
                         }`}
                       />
-                      <span className="tracking-wide">{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                     </div>
 
-                    {/* Badge */}
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span
-                        className={`px-2 py-0.5 text-xs font-mono font-medium rounded-full ${
-                          isActive
-                            ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30'
-                            : 'bg-[#1D1D24] text-[#F59E0B] border border-[#2D2D38]'
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
+                    {/* Badge or Dot */}
+                    <div className="flex items-center gap-1.5">
+                      {item.alertDot && (
+                        <span className="w-2 h-2 rounded-full bg-cyan-400" title="Card Frozen" />
+                      )}
+
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="px-2 py-0.5 text-xs font-mono font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </MagneticButton>
               );
@@ -145,30 +154,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Engine Telemetry Bottom Box */}
-        <div className="p-4 border-t border-[#1F1F26] space-y-3">
-          <div className="rounded-lg bg-[#131317] border border-[#212128] p-3">
-            <div className="flex items-center justify-between mb-2">
+        {/* Protection Telemetry Bottom Box */}
+        <div className="p-4 border-t border-white/[0.08] space-y-3">
+          <div className="rounded-xl bg-[#121216] border border-white/[0.08] p-3 space-y-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                 </span>
-                <span className="text-xs font-medium text-[#D0D0DC]">Rule Engine</span>
+                <span className="text-xs font-medium text-white">FraudShield Active</span>
               </div>
-              <span className="text-[11px] font-mono text-[#22C55E] bg-[#22C55E]/10 px-1.5 py-0.5 rounded border border-[#22C55E]/20">
-                12ms
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                Live
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-[#78788A]">
-              <span>Model v4.2-Flash</span>
-              <span>99.99% Uptime</span>
+            <div className="flex items-center justify-between text-[11px] text-[#71717A]">
+              <span>Card: •••• 4821</span>
+              <span>{isCardFrozen ? 'Status: Frozen' : 'Status: Guarded'}</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-1 text-[11px] text-[#606070]">
-            <span>UTC 18:59:12</span>
+          <div className="flex items-center justify-between px-1 text-[11px] text-[#71717A] font-mono">
+            <span>2-Way 3DS Active</span>
             <span>TLS 1.3 Strict</span>
           </div>
         </div>

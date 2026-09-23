@@ -33,18 +33,12 @@ export const AnalyticsView: React.FC = () => {
   return (
     <div className="space-y-8 pb-16">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1E1E26] pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.04] pb-6">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2.5">
-            <h1 className="font-heading text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Executive Analytics & Impact Overview
-            </h1>
-            <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              Production Telemetry
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm text-[#8E8EA2] max-w-3xl leading-relaxed">
+          <h1 className="font-heading text-xl sm:text-2xl font-semibold text-white tracking-tight">
+            Analytics & Protection Overview
+          </h1>
+          <p className="text-xs sm:text-sm text-[#909099] max-w-3xl leading-relaxed">
             High-level performance telemetry, empirical business-loss reduction, and autonomous authorization resolution breakdown across all payment streams.
           </p>
         </div>
@@ -55,16 +49,16 @@ export const AnalyticsView: React.FC = () => {
             type="button"
             onClick={handleExportReport}
             disabled={isExporting}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#15151C] hover:bg-[#1E1E28] border border-[#262634] text-xs text-[#C4C4D8] hover:text-white transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-[#EDEDED] hover:text-white transition-all cursor-pointer"
           >
             {isExporting ? (
               <>
-                <div className="w-3.5 h-3.5 border-2 border-[#6366F1]/30 border-t-[#6366F1] rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Generating Executive PDF...</span>
               </>
             ) : (
               <>
-                <Download className="w-3.5 h-3.5 text-[#6366F1]" />
+                <Download className="w-3.5 h-3.5 text-white" />
                 <span>Export Report (PDF)</span>
               </>
             )}

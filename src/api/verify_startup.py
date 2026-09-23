@@ -31,12 +31,18 @@ async def verify_startup():
         print(f"    [ERR] Database error: {e}")
 
     try:
-        print("\n[2] Checking Classical Model...")
+        print("\n[2] Checking Canonical Classical Model...")
         from src.api.analyst import get_model_data
+        from src.config import CANONICAL_MODEL_PATH, CANONICAL_SCALER_PATH, CLASSICAL_DECISION_THRESHOLD
         data = get_model_data()
-        if data.get("model"):
-            print(f"    [OK] Classical model loaded")
+        if data.get("model") and data.get("scaler"):
+            booster = data["model"].get_booster()
+            print(f"    [OK] Canonical Classical model loaded")
+            print(f"         - Artifact: {CANONICAL_MODEL_PATH.name}")
             print(f"         - Model type: {type(data['model']).__name__}")
+            print(f"         - Booster features: {booster.num_features()}")
+            print(f"         - Scaler features: {data['scaler'].n_features_in_}")
+            print(f"         - Decision threshold: {CLASSICAL_DECISION_THRESHOLD}")
             print(f"         - Test samples: {len(data.get('X_test', []))}")
             checks["classical_model"] = True
     except Exception as e:

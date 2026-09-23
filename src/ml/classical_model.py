@@ -1,4 +1,11 @@
-"""Classical machine learning model training and inference."""
+"""Classical machine learning model training and inference.
+
+NOTE: This module and the resulting `classical_model.joblib` artifact represent
+a legacy/research training pipeline (max_depth=6, lr=0.10, threshold=0.50).
+The canonical production Phase 1 artifact is `phase1/data/xgboost_model.joblib`
+(max_depth=7, lr=0.15, threshold=0.70). Production inference endpoints load
+the canonical artifact directly and do NOT use this class.
+"""
 import xgboost as xgb
 import pandas as pd
 import numpy as np
@@ -24,7 +31,11 @@ logger = logging.getLogger(__name__)
 
 
 class FraudClassifier:
-    """XGBoost-based fraud classifier with SHAP explanations."""
+    """Legacy XGBoost-based fraud classifier with SHAP explanations.
+    
+    This class is maintained for historical/training demo reproduction.
+    Production endpoints load `phase1/data/xgboost_model.joblib` directly.
+    """
 
     def __init__(
         self,

@@ -1,24 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, CheckCircle2, AlertTriangle, ShieldCheck, User } from 'lucide-react';
+import { Shield, Search, Bell, CheckCircle2, AlertTriangle, ShieldCheck, User } from 'lucide-react';
 import { NotificationItem } from '../types';
 
 interface TopBarProps {
-  onOpenMobileNav: () => void;
   notifications: NotificationItem[];
   onSelectTransaction?: (txId: string) => void;
   onTriggerPushConfirmation?: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onSignOut?: () => void;
+  onNavigateHome?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  onOpenMobileNav,
   notifications,
   onSelectTransaction,
   searchQuery,
   onSearchChange,
   onSignOut,
+  onNavigateHome,
 }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -41,81 +41,81 @@ export const TopBar: React.FC<TopBarProps> = ({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 h-16 w-full bg-[#0A0A0B]/85 backdrop-blur-md border-b border-[#1F1F26] px-4 sm:px-6 flex items-center justify-between gap-4">
-      {/* Left section: mobile hamburger & search bar */}
-      <div className="flex items-center gap-3 flex-1 max-w-xl">
+    <header className="sticky top-0 z-30 h-16 w-full bg-[#000000]/90 backdrop-blur-xl border-b border-white/[0.04] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      {/* Left section: Brand logo & Global Search */}
+      <div className="flex items-center gap-4 sm:gap-6 flex-1 max-w-2xl">
         <button
-          onClick={onOpenMobileNav}
-          className="lg:hidden p-2 rounded-lg text-[#9E9EA8] hover:text-white hover:bg-[#141418] transition-colors"
-          aria-label="Open navigation drawer"
+          onClick={onNavigateHome}
+          className="flex items-center gap-3 group cursor-pointer focus:outline-none"
         >
-          <Menu className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+            <Shield className="w-4.5 h-4.5 text-white" />
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="font-heading font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
+              FraudShield
+              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-white/5 text-[#909099] border border-white/5">
+                PRO
+              </span>
+            </span>
+          </div>
         </button>
 
         {/* Global Search Input */}
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#606070]" />
+        <div className="relative w-full max-w-md hidden xs:block sm:block">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#5E5E68]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search merchant, card token, IP, or ID..."
-            className="w-full bg-[#131317] border border-[#23232B] rounded-lg pl-9 pr-12 py-1.5 text-sm text-[#E2E2EC] placeholder-[#606070] focus:outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/25 transition-colors"
+            placeholder="Search merchant, token, IP, or ID..."
+            className="w-full bg-[#0A0A0C] border border-white/[0.05] rounded-xl pl-9 pr-12 py-1.5 text-xs text-[#EDEDED] placeholder-[#5E5E68] focus:outline-none focus:border-white/20 transition-all"
           />
-          <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-[#78788C] bg-[#1B1B22] border border-[#292934] rounded">
+          <kbd className="hidden md:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-[#5E5E68] bg-[#111114] border border-white/[0.05] rounded">
             ⌘K
           </kbd>
         </div>
       </div>
 
-      {/* Right section: System telemetry status, Notification bell, User avatar */}
-      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        {/* Live Telemetry Pill */}
-        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#141418] border border-[#23232A] text-xs text-[#A4A4B4]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]" />
-          </span>
-          <span className="font-mono text-[11px] text-[#C0C0D0]">Live Intercept Active</span>
-        </div>
-
+      {/* Right section: Notification bell, User avatar */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Notification Bell with animated pending badge */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2 rounded-lg text-[#9E9EA8] hover:text-white hover:bg-[#141418] border border-transparent hover:border-[#23232B] transition-colors"
+            className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.05] text-white transition-colors cursor-pointer"
             aria-label="View notifications"
           >
-            <Bell className="w-4.5 h-4.5" />
+            <Bell className="w-4 h-4 text-white" />
             {pendingCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F59E0B] opacity-80" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F59E0B]" />
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-80" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
               </span>
             )}
           </button>
 
           {/* Notifications Dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#131317] border border-[#272732] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-4 py-3 border-b border-[#1F1F28] flex items-center justify-between">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#0A0A0C] border border-white/[0.08] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-4 py-3 border-b border-white/[0.05] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-heading text-sm font-semibold text-white">
                     Risk Alerts & Step-Ups
                   </span>
-                  <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/25">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                     {pendingCount} Pending
                   </span>
                 </div>
                 <button
                   onClick={() => setNotificationsOpen(false)}
-                  className="text-xs text-[#78788A] hover:text-white transition-colors"
+                  className="text-xs text-[#5E5E68] hover:text-white transition-colors cursor-pointer"
                 >
                   Dismiss
                 </button>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-[#1D1D26]">
+              <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.04]">
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
@@ -125,37 +125,27 @@ export const TopBar: React.FC<TopBarProps> = ({
                         setNotificationsOpen(false);
                       }
                     }}
-                    className={`p-3.5 hover:bg-[#191922] transition-colors cursor-pointer flex gap-3 ${
-                      notif.unread ? 'bg-[#15151C]' : ''
+                    className={`p-3.5 hover:bg-white/[0.03] transition-colors cursor-pointer flex gap-3 ${
+                      notif.unread ? 'bg-white/[0.02]' : ''
                     }`}
                   >
                     <div className="mt-0.5 shrink-0">
-                      {notif.type === 'alert' && (
-                        <div className="w-6 h-6 rounded-full bg-[#EF4444]/15 border border-[#EF4444]/30 flex items-center justify-center text-[#EF4444]">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                        </div>
-                      )}
-                      {notif.type === 'warning' && (
-                        <div className="w-6 h-6 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B]">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                        </div>
-                      )}
-                      {notif.type === 'info' && (
-                        <div className="w-6 h-6 rounded-full bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                        </div>
-                      )}
+                      <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                        {notif.type === 'alert' && <AlertTriangle className="w-3.5 h-3.5 text-red-400" />}
+                        {notif.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
+                        {notif.type === 'info' && <ShieldCheck className="w-3.5 h-3.5 text-white" />}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
                         <p className="text-xs font-medium text-white truncate">
                           {notif.title}
                         </p>
-                        <span className="text-[10px] text-[#6E6E80] shrink-0 font-mono">
+                        <span className="text-[10px] text-[#5E5E68] shrink-0 font-mono">
                           {notif.timeAgo}
                         </span>
                       </div>
-                      <p className="text-xs text-[#9090A0] mt-0.5 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-[#909099] mt-0.5 line-clamp-2 leading-relaxed">
                         {notif.message}
                       </p>
                     </div>
@@ -170,59 +160,52 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="relative" ref={userRef}>
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="flex items-center gap-2.5 p-1 sm:pl-2 sm:pr-2.5 rounded-lg hover:bg-[#141418] border border-transparent hover:border-[#23232B] transition-colors"
+            className="flex items-center gap-2.5 p-1 sm:pl-1.5 sm:pr-2.5 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-colors cursor-pointer"
             aria-label="User profile options"
           >
-            <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-[#1E1E26] to-[#2E2E3C] border border-[#3A3A4A] flex items-center justify-center text-xs font-semibold text-white">
-              AV
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22C55E] border-2 border-[#0A0A0B]" />
+            <div className="relative w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-semibold text-white">
+              EV
             </div>
             <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-medium text-[#EDEDED] leading-none">
-                Alex Vance
+              <span className="text-xs font-medium text-white leading-none">
+                Eleanor Vance
               </span>
-              <span className="text-[10px] text-[#7A7A8E] mt-1 leading-none">
-                SecOps Lead
+              <span className="text-[10px] text-[#909099] mt-1 leading-none">
+                Cardholder
               </span>
             </div>
           </button>
 
           {/* User Popover Menu */}
           {userMenuOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#131317] border border-[#272732] shadow-2xl z-50 p-2 text-xs text-[#A8A8B8] animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-2 border-b border-[#1E1E28]">
-                <p className="font-medium text-white">Alex Vance</p>
-                <p className="text-[11px] text-[#707082] font-mono mt-0.5">
-                  alex.vance@fraudshield.internal
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0A0A0C] border border-white/[0.08] shadow-2xl z-50 p-2 text-xs text-[#909099] animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-2 border-b border-white/[0.05]">
+                <p className="font-semibold text-white">Eleanor Vance</p>
+                <p className="text-[11px] text-[#5E5E68] font-mono mt-0.5">
+                  eleanor.vance@fraudshield.me
                 </p>
               </div>
               <div className="py-1 space-y-0.5">
                 <button
                   onClick={() => setUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-1.5 rounded-md hover:bg-[#1A1A22] text-[#D0D0DC] hover:text-white transition-colors"
+                  className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-white/5 text-[#EDEDED] hover:text-white transition-colors cursor-pointer"
                 >
-                  Security Operations Center
+                  Security Preferences
                 </button>
                 <button
                   onClick={() => setUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-1.5 rounded-md hover:bg-[#1A1A22] text-[#D0D0DC] hover:text-white transition-colors"
+                  className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-white/5 text-[#EDEDED] hover:text-white transition-colors cursor-pointer"
                 >
-                  Audit Trail & Compliance
-                </button>
-                <button
-                  onClick={() => setUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-1.5 rounded-md hover:bg-[#1A1A22] text-[#D0D0DC] hover:text-white transition-colors"
-                >
-                  API Keys & Webhooks
+                  Card Verification Settings
                 </button>
               </div>
-              <div className="pt-1 mt-1 border-t border-[#1E1E28]">
+              <div className="pt-1 mt-1 border-t border-white/[0.05]">
                 <button
                   onClick={() => {
                     setUserMenuOpen(false);
                     onSignOut?.();
                   }}
-                  className="w-full text-left px-3 py-1.5 rounded-md hover:bg-[#1A1A22] text-[#EF4444] transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-white/5 text-red-400 transition-colors cursor-pointer"
                 >
                   Sign Out Session
                 </button>
