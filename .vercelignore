@@ -66,3 +66,6 @@ logs/
 *.tmp
 *.temp
 .claude/
+.agents/
+.codex/
+
